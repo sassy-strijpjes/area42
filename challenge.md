@@ -48,3 +48,9 @@ gegevens die passen bij hun rol, en onbevoegde toegang wordt voorkomen?
 Hoe kun je op basis van historische reserveringsgegevens een eenvoudige
 voorspelling maken van de bezetting van het vakantiepark, zodat inzicht ontstaat
 in verwachte drukte per periode?
+
+### Scrum master, DevOps engineer and tester
+
+Hoe zorg je ervoor dat een planning zonder blocking elementen wordt opgezet? Hoe
+automatiseer je deployments van staging en productie environment? Hoe schrijf je
+testcases op basis van requirements, en kan je deze testen automatiseren?
