@@ -13,8 +13,7 @@ zijn bijv. een gedeelde database en een gedeelde testomgeving.
 
 ## Rollen en beschrijving
 
-Challenge 1: Reserveringen 
-Software: Reserveringen van accommodaties. Hoe kun je
+Challenge 1: Reserveringen Software: Reserveringen van accommodaties. Hoe kun je
 een softwaresysteem ontwerpen dat verschillende typen accommodaties (zoals
 bungalows, chalets en kampeerplaatsen) ondersteunt, waarbij elk type een eigen
 prijsberekening heeft, zonder dat het systeem moeilijk uitbreidbaar of
