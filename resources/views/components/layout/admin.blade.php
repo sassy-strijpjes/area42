@@ -14,16 +14,11 @@
 
             <flux:sidebar.nav>
                 <flux:sidebar.item icon="home" href="#" current>Dashboard</flux:sidebar.item>
-                <flux:sidebar.item icon="document-text" href="#">Logs</flux:sidebar.item>
                 <flux:sidebar.item icon="users" href="#">Staff</flux:sidebar.item>
-                <flux:sidebar.item icon="document-check" href="#">Audits</flux:sidebar.item>
+                <flux:sidebar.item icon="document-text" href="#">Logs</flux:sidebar.item>
             </flux:sidebar.nav>
 
             <flux:sidebar.spacer />
-
-            <flux:sidebar.nav>
-                <flux:sidebar.item icon="cog-6-tooth" href="#">Settings</flux:sidebar.item>
-            </flux:sidebar.nav>
 
             <flux:dropdown position="top" align="start" class="max-lg:hidden">
                 <flux:sidebar.profile avatar="{{ asset('img/user-icon.png') }}" :name="$user->name" />
