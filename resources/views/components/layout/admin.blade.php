@@ -13,9 +13,32 @@
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
-                <flux:sidebar.item icon="home" href="#" current>Dashboard</flux:sidebar.item>
-                <flux:sidebar.item icon="users" href="#">Staff</flux:sidebar.item>
-                <flux:sidebar.item icon="document-text" href="#">Logs</flux:sidebar.item>
+                <flux:sidebar.item
+                    icon="home"
+                    :href="route('admin.dashboard')"
+                    :current="request()->routeIs('admin.dashboard')"
+                    wire:navigate
+                >
+                    Dashboard
+                </flux:sidebar.item>
+
+                <flux:sidebar.item
+                    icon="users"
+                    :href="route('admin.staff')"
+                    :current="request()->routeIs('admin.staff*')"
+                    wire:navigate
+                >
+                    Staff
+                </flux:sidebar.item>
+
+                <flux:sidebar.item
+                    icon="document-text"
+                    :href="route('admin.logs')"
+                    :current="request()->routeIs('admin.logs')"
+                    wire:navigate
+                >
+                    Logs
+                </flux:sidebar.item>
             </flux:sidebar.nav>
 
             <flux:sidebar.spacer />
@@ -40,7 +63,15 @@
         </flux:header>
 
         <flux:main class="flex-1 overflow-auto">
-            <flux:heading size="xl">{{ $pageTitle }}</flux:heading>
+            <div class="flex items-center justify-between gap-4">
+                <flux:heading size="xl">{{ $pageTitle }}</flux:heading>
+
+                @isset($headerActions)
+                    <div class="shrink-0">
+                        {{ $headerActions }}
+                    </div>
+                @endisset
+            </div>
 
             <flux:separator variant="subtle" class="my-8" />
 

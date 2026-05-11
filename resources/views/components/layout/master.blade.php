@@ -11,6 +11,10 @@
     <body class="min-h-screen bg-white dark:bg-stone-800 antialiased">
         {{ $slot }}
 
+        @persist('toast')
+            <flux:toast />
+        @endpersist
+
         @livewireScripts
         @fluxScripts
     </body>
