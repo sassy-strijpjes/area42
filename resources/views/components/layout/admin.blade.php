@@ -1,3 +1,4 @@
+@props(['pageTitle' => 'Dashboard', 'user' => null])
 <x-layout.master class="h-screen">
     <div class="flex flex-col lg:flex-row h-screen">
         <flux:sidebar sticky collapsible="mobile" class="lg:h-full bg-zinc-50 dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-700">
@@ -38,15 +39,15 @@
 
             <flux:spacer />
 
-            <flux:profile avatar="/img/demo/user.png" />
+            <flux:profile avatar="https://fluxui.dev/img/demo/teej.png" />
         </flux:header>
 
         <flux:main class="flex-1 overflow-auto">
-            <flux:heading size="xl">Settings</flux:heading>
+            <flux:heading size="xl">{{ $pageTitle }}</flux:heading>
 
             <flux:separator variant="subtle" class="my-8" />
 
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aperiam assumenda culpa dolorem ea error, exercitationem facere illum itaque natus necessitatibus nisi officia provident quae quo sequi vitae voluptate. Architecto, quam!</p>
+            {{ $slot }}
         </flux:main>
     </div>
 </x-layout.master>

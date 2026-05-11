@@ -9,7 +9,7 @@
 
                 <flux:heading class="text-center" size="xl">Welcome back</flux:heading>
 
-                <livewire:forms.auth.login />
+                <livewire:forms.auth.login :type="$type" />
             </div>
     </div>
 </x-layout.master>

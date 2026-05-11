@@ -1,4 +1,4 @@
-@props(['pageTitle' => 'Dashboard', 'actionHref' => '#', 'actionText' => 'New', 'icon' => 'plus'])
+@props(['pageTitle' => 'Dashboard', 'actionHref' => '#', 'actionText' => 'New', 'icon' => 'plus', 'user' => null])
 <x-layout.master>
     <div>
         <flux:header container class="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 flex items-center">
@@ -28,8 +28,8 @@
                                 <flux:avatar src="https://fluxui.dev/img/demo/teej.png" size="sm" class="shrink-0" />
 
                                 <div class="grid flex-1 text-left text-sm leading-tight">
-                                    <span class="truncate font-semibold">John Doe</span>
-                                    <span class="truncate text-xs">john@doe.com</span>
+                                    <span class="truncate font-semibold">{{ $user->name }}</span>
+                                    <span class="truncate text-xs">{{ $user->email }}</span>
                                 </div>
                             </div>
                         </div>
