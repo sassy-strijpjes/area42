@@ -26,7 +26,7 @@
             </flux:sidebar.nav>
 
             <flux:dropdown position="top" align="start" class="max-lg:hidden">
-                <flux:sidebar.profile avatar="https://fluxui.dev/img/demo/teej.png" name="John Doe" />
+                <flux:sidebar.profile avatar="https://fluxui.dev/img/demo/teej.png" :name="$user->name" />
 
                 <flux:menu>
                     <flux:menu.item icon="arrow-right-start-on-rectangle">Logout</flux:menu.item>

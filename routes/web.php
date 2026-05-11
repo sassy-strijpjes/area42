@@ -5,7 +5,10 @@ use App\Http\Controllers\AuthController;
 
 require __DIR__ . '/admin.php';
 
-Route::name('staff.')->middleware([Auth::class])->group(function () {
+Route::name('staff.')->prefix('staff')->group(function () {
+    Route::get('login', [AuthController::class, 'type'])->name('login');
+});
+
+Route::name('staff.')->prefix('staff')->middleware(['auth'])->group(function () {
     Route::view('/', 'staff.dashboard')->name('dashboard');
-    Route::get('staff/login', [AuthController::class, 'type'])->name('login');
 });

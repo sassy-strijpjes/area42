@@ -19,7 +19,7 @@ class Auth
             return redirect()->route('admin.login');
         }
 
-        if (!(session()->has('staff_id') && $request->is('staff/*'))) {
+        if (!session()->has('staff_id') && $request->is('staff/*')) {
             return redirect()->route('staff.login');
         }
 
