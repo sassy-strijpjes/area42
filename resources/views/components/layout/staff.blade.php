@@ -7,13 +7,14 @@
             <flux:brand href="#" logo="https://fluxui.dev/img/demo/logo.png" name="Area 42" class="max-lg:hidden" />
 
             <flux:navbar class="-mb-px max-lg:hidden">
-                <flux:navbar.item href="#">Accomodations</flux:navbar.item>
-                <flux:dropdown>
-                    <flux:navbar.item icon:trailing="chevron-down">Restaurant</flux:navbar.item>
-                    <flux:navmenu>
-                        <flux:navmenu.item href="#">Reservations</flux:navmenu.item>
-                    </flux:navmenu>
-                </flux:dropdown>
+                <flux:navbar.item
+                    icon="home"
+                    :href="route('staff.dashboard')"
+                    :current="request()->routeIs('staff.dashboard')"
+                    wire:navigate
+                >
+                    Dashboard
+                </flux:navbar.item>
             </flux:navbar>
 
             <flux:spacer />
@@ -55,16 +56,13 @@
 
             <flux:sidebar.nav variant="outline">
                 <flux:sidebar.group>
-                    <flux:sidebar.item href="#" current>
-                        Accomodations
-                    </flux:sidebar.item>
-
-                    <flux:sidebar.item href="#">
-                        Restaurant
-                    </flux:sidebar.item>
-
-                    <flux:sidebar.item href="#">
-                        Reservations
+                    <flux:sidebar.item
+                        icon="home"
+                        :href="route('staff.dashboard')"
+                        :current="request()->routeIs('staff.dashboard')"
+                        wire:navigate
+                    >
+                        Dashboard
                     </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
