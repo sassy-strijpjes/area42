@@ -16,30 +16,36 @@ class Auth
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->is('admin*')) {
-
+        if ($request->routeIs('admin.*')) {
             $id = session('admin_id');
 
             $admin = $id
                 ? DB::table('admins')->where('id', $id)->first()
                 : null;
 
-            if (!$admin && !$request->is('admin/login')) {
+            if ($admin && $request->routeIs('admin.login')) {
+                return redirect()->route('admin.dashboard');
+            }
+
+            if (!$admin && !$request->routeIs('admin.login')) {
                 session()->forget('admin_id');
 
                 return redirect()->route('admin.login');
             }
         }
 
-        if ($request->is('staff*')) {
-
+        if ($request->routeIs('staff.*')) {
             $id = session('staff_id');
 
             $staff = $id
                 ? DB::table('staff')->where('id', $id)->first()
                 : null;
 
-            if (!$staff && !$request->is('staff/login')) {
+            if ($staff && $request->routeIs('staff.login')) {
+                return redirect()->route('staff.dashboard');
+            }
+
+            if (!$staff && !$request->routeIs('staff.login')) {
                 session()->forget('staff_id');
 
                 return redirect()->route('staff.login');

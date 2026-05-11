@@ -12,8 +12,6 @@
             <flux:input wire:model="password" type="password" placeholder="Your password" />
         </flux:field>
 
-        <flux:checkbox wire:model="remember_me" label="Remember me" />
-
         <flux:button type="submit" variant="primary" class="w-full cursor-pointer">Log in</flux:button>
     </div>
 </form>

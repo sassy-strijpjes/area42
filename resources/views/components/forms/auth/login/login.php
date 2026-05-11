@@ -15,8 +15,6 @@ new class extends Component
     #[Validate('required')]
     public string $password = '';
 
-    public bool $remember_me = false;
-
     public function mount(?string $type = null): void
     {
         $this->type = in_array($type, ['admin', 'staff'], true) ? $type : 'staff';

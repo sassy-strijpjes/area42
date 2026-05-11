@@ -5,11 +5,8 @@ use App\Http\Controllers\AuthController;
 
 require __DIR__ . '/admin.php';
 
-Route::name('staff.')->prefix('staff')->group(function () {
-    Route::get('login', [AuthController::class, 'type'])->name('login');
-});
-
-Route::name('staff.')->prefix('staff')->middleware(['auth'])->group(function () {
+Route::name('staff.')->middleware(['auth'])->group(function () {
     Route::view('/', 'staff.dashboard')->name('dashboard');
+    Route::get('login', [AuthController::class, 'type'])->name('login');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });
