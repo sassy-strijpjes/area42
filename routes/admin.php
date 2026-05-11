@@ -9,5 +9,6 @@ Route::name('admin.')->prefix('admin')->group(function () {
 
 Route::name('admin.')->prefix('admin')->middleware(['auth'])->group(function () {
     Route::view('/', 'admin.dashboard')->name('dashboard');
+    Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });
 

@@ -11,4 +11,5 @@ Route::name('staff.')->prefix('staff')->group(function () {
 
 Route::name('staff.')->prefix('staff')->middleware(['auth'])->group(function () {
     Route::view('/', 'staff.dashboard')->name('dashboard');
+    Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });

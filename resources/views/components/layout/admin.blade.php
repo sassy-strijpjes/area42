@@ -26,10 +26,12 @@
             </flux:sidebar.nav>
 
             <flux:dropdown position="top" align="start" class="max-lg:hidden">
-                <flux:sidebar.profile avatar="https://fluxui.dev/img/demo/teej.png" :name="$user->name" />
+                <flux:sidebar.profile avatar="{{ asset('img/user-icon.png') }}" :name="$user->name" />
 
                 <flux:menu>
-                    <flux:menu.item icon="arrow-right-start-on-rectangle">Logout</flux:menu.item>
+                    <form action="{{ route('admin.logout') }}" method="POST">
+                        <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle">Logout</flux:menu.item>
+                    </form>
                 </flux:menu>
             </flux:dropdown>
         </flux:sidebar>
@@ -39,7 +41,7 @@
 
             <flux:spacer />
 
-            <flux:profile avatar="https://fluxui.dev/img/demo/teej.png" />
+            <flux:profile avatar="{{ asset('img/user-icon.png') }}" />
         </flux:header>
 
         <flux:main class="flex-1 overflow-auto">

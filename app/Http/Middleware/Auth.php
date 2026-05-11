@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
 class Auth
@@ -15,12 +16,34 @@ class Auth
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!session()->has('admin_id') && $request->is('admin/*')) {
-            return redirect()->route('admin.login');
+        if ($request->is('admin*')) {
+
+            $id = session('admin_id');
+
+            $admin = $id
+                ? DB::table('admins')->where('id', $id)->first()
+                : null;
+
+            if (!$admin && !$request->is('admin/login')) {
+                session()->forget('admin_id');
+
+                return redirect()->route('admin.login');
+            }
         }
 
-        if (!session()->has('staff_id') && $request->is('staff/*')) {
-            return redirect()->route('staff.login');
+        if ($request->is('staff*')) {
+
+            $id = session('staff_id');
+
+            $staff = $id
+                ? DB::table('staff')->where('id', $id)->first()
+                : null;
+
+            if (!$staff && !$request->is('staff/login')) {
+                session()->forget('staff_id');
+
+                return redirect()->route('staff.login');
+            }
         }
 
         return $next($request);

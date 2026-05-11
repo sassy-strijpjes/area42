@@ -6,8 +6,9 @@
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Document</title>
         @vite('resources/css/app.css')
+        @fluxAppearance
     </head>
-    <body class="min-h-screen bg-white antialiased">
+    <body class="min-h-screen bg-white dark:bg-stone-800 antialiased">
         {{ $slot }}
 
         @livewireScripts

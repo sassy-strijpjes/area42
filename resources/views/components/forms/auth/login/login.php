@@ -26,7 +26,7 @@ new class extends Component
     {
         $this->validate();
 
-        $table = $this->type == 'admin' ? 'users' : 'staff';
+        $table = $this->type == 'admin' ? 'admins' : 'staff';
 
         $user = DB::table($table)
             ->where('email', $this->email)

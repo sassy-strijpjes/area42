@@ -1,10 +1,13 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
+
 if (!function_exists('user')) {
     function user()
     {
-        $uri  = $_SERVER['REQUEST_URI'] ?? '';
-        $type = preg_match('#^/?admin(/|$)#', $uri) ? 'admin' : 'staff';
+        $request = request();
+
+        $type = $request->is('admin*') ? 'admin' : 'staff';
 
         $id = session()->get("{$type}_id");
 
@@ -12,7 +15,7 @@ if (!function_exists('user')) {
             return null;
         }
 
-        $table = $type === 'admin' ? 'users' : 'staff';
+        $table = $type === 'admin' ? 'admins' : 'staff';
 
         return DB::table($table)->where('id', $id)->first();
     }

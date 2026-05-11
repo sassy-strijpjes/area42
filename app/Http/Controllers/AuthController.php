@@ -11,4 +11,11 @@ class AuthController extends Controller
 
         return view('login', ['type' => $segment]);
     }
+
+    public function logout()
+    {
+        auth()->logout();
+
+        return redirect()->back();
+    }
 }
