@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\PermissionService;
 use Illuminate\Support\Facades\DB;
 
 if (!function_exists('user')) {
@@ -18,5 +19,12 @@ if (!function_exists('user')) {
         $table = $type === 'admin' ? 'admins' : 'staff';
 
         return DB::table($table)->where('id', $id)->first();
+    }
+}
+
+if (!function_exists('can')) {
+    function can($permission)
+    {
+        return app(PermissionService::class)->can(user()->id, $permission);
     }
 }
