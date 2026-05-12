@@ -6,10 +6,27 @@ class AuthController extends Controller
 {
     public function type()
     {
-        // Get first part of url
-        $segment = request()->segment(1);
+        $type = request()->routeIs('admin.*') ? 'admin' : 'staff';
 
-        return view('auth.login', ['type' => $segment == 'admin' ? 'admin' : 'staff']);
+        return view('auth.login', ['type' => $type]);
+    }
+
+    public function forgotPassword()
+    {
+        $type = request()->routeIs('admin.*') ? 'admin' : 'staff';
+
+        return view('auth.forgot-password', ['type' => $type]);
+    }
+
+    public function resetPassword()
+    {
+        $type = request()->routeIs('admin.*') ? 'admin' : 'staff';
+
+        return view('auth.reset-password', [
+            'type' => $type,
+            'token' => request()->route('token'),
+            'email' => request()->query('email', ''),
+        ]);
     }
 
     public function logout()

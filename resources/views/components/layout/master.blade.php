@@ -12,8 +12,18 @@
         {{ $slot }}
 
         @persist('toast')
-            <flux:toast />
+            <flux:toast position="top end" />
         @endpersist
+
+        <script>
+            document.addEventListener('livewire:navigated', () => {
+                const toast = @json(session('toast'));
+
+                if (!toast) return;
+
+                Flux.toast(toast);
+            });
+        </script>
 
         @livewireScripts
         @fluxScripts

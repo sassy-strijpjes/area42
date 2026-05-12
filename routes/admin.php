@@ -4,6 +4,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
 Route::name('admin.')->prefix('admin')->middleware(['auth'])->group(function () {
+    Route::get('forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot-password');
+    Route::get('reset-password/{token}', [AuthController::class, 'resetPassword'])->name('reset-password');
+});
+
+Route::name('admin.')->prefix('admin')->middleware(['auth'])->group(function () {
     Route::view('/', 'admin.dashboard')->name('dashboard');
     Route::view('staff', 'admin.staff')->name('staff');
     Route::view('logs', 'admin.logs')->name('logs');

@@ -1,4 +1,4 @@
-<form wire:submit="login">
+<form wire:submit.prevent="login">
     <div class="flex flex-col gap-6">
         <flux:input wire:model="email" label="Email" type="email" placeholder="email@example.com" />
 
@@ -6,7 +6,7 @@
             <div class="mb-3 flex justify-between">
                 <flux:label>Password</flux:label>
 
-                <flux:link href="#" variant="subtle" class="text-sm">Forgot password?</flux:link>
+                <flux:link href="{{ $type == 'admin' ? route('admin.forgot-password') : route('staff.forgot-password') }}" variant="subtle" class="text-sm">Forgot password?</flux:link>
             </div>
 
             <flux:input wire:model="password" type="password" placeholder="Your password" />
