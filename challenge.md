@@ -53,4 +53,5 @@ in verwachte drukte per periode?
 
 Hoe zorg je ervoor dat een planning zonder blocking elementen wordt opgezet? Hoe
 automatiseer je deployments van staging en productie environment? Hoe schrijf je
-testcases op basis van requirements, en kan je deze testen automatiseren?
+testcases op basis van requirements, en kan je deze testen automatiseren? Deze
+rol houd ook in dat je een IoT device gaat koppelen aan de backend server.
