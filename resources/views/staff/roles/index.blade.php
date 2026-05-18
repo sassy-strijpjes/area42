@@ -10,7 +10,7 @@
         />
 
         <flux:button :href="route('staff.roles.create')" icon:trailing="plus" size="sm">
-            Action
+            Add
         </flux:button>
     </x-slot:headerActions>
 
