@@ -18,7 +18,7 @@ class PermissionMiddleware
     {
         $user = user();
 
-        if (!$user) {
+        if (! $user) {
             abort(401, 'Unauthenticated');
         }
 
@@ -29,7 +29,7 @@ class PermissionMiddleware
             ->where('permissions.name', $permission)
             ->exists();
 
-        if (!$hasPermission) {
+        if (! $hasPermission) {
             abort(403, 'Forbidden');
         }
 

@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use Illuminate\Support\Facades\Route;
 
 Route::name('admin.')->prefix('admin')->middleware(['auth'])->group(function () {
     Route::get('forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot-password');
@@ -18,4 +18,3 @@ Route::name('admin.')->prefix('admin')->middleware(['auth'])->group(function () 
     Route::get('login', [AuthController::class, 'type'])->name('login');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });
-

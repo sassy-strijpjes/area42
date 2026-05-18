@@ -1,15 +1,17 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Support\Facades\DB;
 
-new class extends Component {
+new class extends Component
+{
     use WithPagination;
 
     public $sortBy = 'created_at';
+
     public $sortDirection = 'desc';
 
     public string $search = '';
@@ -29,6 +31,12 @@ new class extends Component {
             $this->sortBy = $column;
             $this->sortDirection = 'asc';
         }
+    }
+
+    #[On('item-deleted')]
+    public function refreshRoles()
+    {
+        $this->resetPage();
     }
 
     #[Computed]

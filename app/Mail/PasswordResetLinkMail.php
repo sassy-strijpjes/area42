@@ -15,8 +15,7 @@ class PasswordResetLinkMail extends Mailable
     public function __construct(
         public string $type,
         public string $resetUrl,
-    ) {
-    }
+    ) {}
 
     public function envelope(): Envelope
     {
@@ -32,4 +31,3 @@ class PasswordResetLinkMail extends Mailable
         );
     }
 }
-

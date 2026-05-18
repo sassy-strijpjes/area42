@@ -3,7 +3,7 @@
 use App\Services\PermissionService;
 use Illuminate\Support\Facades\DB;
 
-if (!function_exists('user')) {
+if (! function_exists('user')) {
     function user()
     {
         $request = request();
@@ -12,7 +12,7 @@ if (!function_exists('user')) {
 
         $id = session()->get("{$type}_id");
 
-        if (!$id) {
+        if (! $id) {
             return null;
         }
 
@@ -22,7 +22,7 @@ if (!function_exists('user')) {
     }
 }
 
-if (!function_exists('can')) {
+if (! function_exists('can')) {
     function can($permission)
     {
         return app(PermissionService::class)->can(user()->id, $permission);

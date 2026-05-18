@@ -2,14 +2,15 @@
 
 use App\Mail\PasswordResetLinkMail;
 use Flux\Flux;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Livewire\Component;
 use Livewire\Attributes\Validate;
+use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     public string $type = 'staff';
 
     #[Validate('required|email')]
@@ -31,7 +32,8 @@ new class extends Component {
             ->first();
 
         if (! $user) {
-            Flux::toast('If the email exists, we have sent a reset link.', variant: 'success');
+            Flux::toast('If the email exists, we have sent a reset link', variant: 'success');
+
             return;
         }
 
@@ -52,6 +54,6 @@ new class extends Component {
 
         Mail::to($user->email)->send(new PasswordResetLinkMail($this->type, $resetUrl));
 
-        Flux::toast('If the email exists, we have sent a reset link.', variant: 'success');
+        Flux::toast('If the email exists, we have sent a reset link', variant: 'success');
     }
 };

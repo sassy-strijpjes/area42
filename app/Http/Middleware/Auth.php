@@ -28,7 +28,7 @@ class Auth
                 return redirect()->route('admin.dashboard');
             }
 
-            if (!$admin && !$request->routeIs('admin.login') && !$isGuestAuthPage) {
+            if (! $admin && ! $request->routeIs('admin.login') && ! $isGuestAuthPage) {
                 session()->forget('admin_id');
 
                 return redirect()->route('admin.login');
@@ -47,7 +47,7 @@ class Auth
                 return redirect()->route('staff.dashboard');
             }
 
-            if (!$staff && !$request->routeIs('staff.login') && !$isGuestAuthPage) {
+            if (! $staff && ! $request->routeIs('staff.login') && ! $isGuestAuthPage) {
                 session()->forget('staff_id');
 
                 return redirect()->route('staff.login');

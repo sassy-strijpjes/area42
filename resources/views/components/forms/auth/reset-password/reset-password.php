@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-new class extends Component {
-
+new class extends Component
+{
     public string $type = 'staff';
 
     public string $token = '';

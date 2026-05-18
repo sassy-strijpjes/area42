@@ -1,9 +1,9 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use Illuminate\Support\Facades\Route;
 
-require __DIR__ . '/admin.php';
+require __DIR__.'/admin.php';
 
 Route::name('staff.')->middleware(['auth'])->group(function () {
     Route::get('forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot-password');

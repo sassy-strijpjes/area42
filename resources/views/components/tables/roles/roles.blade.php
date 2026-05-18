@@ -26,13 +26,29 @@
                     <flux:dropdown>
                         <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" inset="top bottom"></flux:button>
                         <flux:menu>
-                            <flux:menu.item icon="pencil-square">Edit</flux:menu.item>
+                            <flux:menu.item icon="pencil-square" :href="route('admin.roles.edit', $role->id)">Edit</flux:menu.item>
                             <flux:menu.separator />
-                            <flux:menu.item variant="danger" icon="trash">Delete</flux:menu.item>
+                            <flux:menu.item
+                                variant="danger"
+                                icon="trash"
+                                x-on:click="$flux.modal('delete-role-{{ $role->id }}').show()"
+                            >
+                                Delete
+                            </flux:menu.item>
                         </flux:menu>
                     </flux:dropdown>
+
+                    <livewire:modals.delete-confirmation
+                        :key="'delete-' . $role->id"
+                        :modalName="'delete-role-' . $role->id"
+                        :itemName="$role->name"
+                        table="roles"
+                        :itemId="$role->id"
+                    />
                 </flux:table.cell>
             </flux:table.row>
         @endforeach
     </flux:table.rows>
 </flux:table>
+
+

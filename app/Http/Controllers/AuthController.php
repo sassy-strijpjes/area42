@@ -31,7 +31,7 @@ class AuthController extends Controller
 
     public function logout()
     {
-        $isAdmin = (bool)session('admin_id');
+        $isAdmin = (bool) session('admin_id');
         $routeName = $isAdmin ? 'admin.login' : 'staff.login';
 
         auth()->logout();

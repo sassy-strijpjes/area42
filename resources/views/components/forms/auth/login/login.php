@@ -1,11 +1,12 @@
 <?php
 
-use Livewire\Component;
-use Livewire\Attributes\Validate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Livewire\Attributes\Validate;
+use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     public string $type = 'staff';
 
     #[Validate('required|email')]
@@ -29,7 +30,7 @@ new class extends Component {
             ->where('email', $this->email)
             ->first();
 
-        if (!$user || !Hash::check($this->password, $user->password)) {
+        if (! $user || ! Hash::check($this->password, $user->password)) {
             $this->addError('email', __('auth.failed'));
 
             return;

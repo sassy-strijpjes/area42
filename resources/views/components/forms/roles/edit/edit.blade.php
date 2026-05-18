@@ -1,4 +1,4 @@
-<form wire:submit.prevent="create">
+<form wire:submit.prevent="update">
     <div class="flex flex-col gap-6">
 
         <flux:input
@@ -36,6 +36,7 @@
                                 </flux:field>
                             @endforeach
                         </div>
+
                     </div>
                 @empty
                     <p class="text-sm text-stone-500 col-span-3">
@@ -47,7 +48,7 @@
 
         <div class="flex justify-end">
             <flux:button type="submit" variant="primary">
-                Create
+                Update
             </flux:button>
         </div>
 

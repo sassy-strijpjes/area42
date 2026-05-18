@@ -2,30 +2,50 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class RolePermissionSeeder extends Seeder
 {
+    public array $roles = [
+        'receptionist',
+        'restaurant_staff',
+        'server',
+        'manager',
+        'housekeeper',
+        'maintenance',
+        'it',
+    ];
+
+    public array $permissions = [
+        'view_roles',
+        'add_roles',
+        'edit_roles',
+        'delete_roles',
+    ];
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        DB::table('roles')->insert([
-            ['name' => 'receptionist', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'restaurant_staff', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'server', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'manager', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'housekeeper', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'maintenance', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'it', 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        $now = now();
 
-        DB::table('permissions')->insert([
-            // TODO
-        ]);
+        DB::table('roles')->insert(
+            array_map(fn ($name) => [
+                'name' => $name,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ], $this->roles)
+        );
+
+        DB::table('permissions')->insert(
+            array_map(fn ($name) => [
+                'name' => $name,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ], $this->permissions)
+        );
 
         DB::table('role_permissions')->insert([
             // TODO
