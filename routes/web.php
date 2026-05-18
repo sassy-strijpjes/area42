@@ -12,6 +12,9 @@ Route::name('staff.')->middleware(['auth'])->group(function () {
 
 Route::name('staff.')->middleware(['auth'])->group(function () {
     Route::view('/', 'staff.dashboard')->name('dashboard');
+    Route::view('roles', 'staff.roles.index')->name('roles');
+    Route::view('roles/create', 'staff.roles.create')->name('roles.create');
+    Route::view('roles/{role}/edit', 'staff.roles.edit')->name('roles.edit');
     Route::get('login', [AuthController::class, 'type'])->name('login');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });

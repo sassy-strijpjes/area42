@@ -1,4 +1,4 @@
-@props(['pageTitle' => 'Dashboard', 'actionHref' => '#', 'actionText' => 'New', 'icon' => 'plus', 'user' => null])
+@props(['pageTitle' => 'Dashboard', 'user' => null])
 <x-layout.master>
     <div>
         <flux:header container class="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 flex items-center">
@@ -14,6 +14,15 @@
                     wire:navigate
                 >
                     Dashboard
+                </flux:navbar.item>
+
+                <flux:navbar.item
+                    icon="shield-check"
+                    :href="route('staff.roles')"
+                    :current="request()->routeIs('staff.roles*')"
+                    wire:navigate
+                >
+                    Roles
                 </flux:navbar.item>
             </flux:navbar>
 
@@ -64,6 +73,15 @@
                     >
                         Dashboard
                     </flux:sidebar.item>
+
+                    <flux:navbar.item
+                        icon="shield-check"
+                        :href="route('staff.roles')"
+                        :current="request()->routeIs('staff.roles*')"
+                        wire:navigate
+                    >
+                        Roles
+                    </flux:navbar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
@@ -73,23 +91,21 @@
         <div>
             <div class="sm:border-b border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
                 <div class="max-w-7xl px-6 sm:px-8 py-3 mx-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-2">
+
                     <div class="max-sm:hidden flex items-baseline gap-3">
-                        <flux:heading size="lg" class="text-lg">{{ $pageTitle }}</flux:heading>
+                        <flux:heading size="lg" class="text-lg">
+                            {{ $pageTitle }}
+                        </flux:heading>
                     </div>
 
                     <flux:spacer />
 
-                    @if($actionHref && $actionText)
-                        @if($icon)
-                            <flux:button href="{{ $actionHref }}" color="primary" size="sm" :icon:trailing="$icon" class="flex items-center gap-1">
-                                {{ $actionText }}
-                            </flux:button>
-                        @else
-                            <flux:button href="{{ $actionHref }}" color="primary" size="sm" class="flex items-center gap-1">
-                                {{ $actionText }}
-                            </flux:button>
-                        @endif
-                    @endif
+                    @isset($headerActions)
+                        <div class="flex items-center gap-3">
+                            {{ $headerActions }}
+                        </div>
+                    @endisset
+
                 </div>
             </div>
 
