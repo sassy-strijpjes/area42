@@ -14,13 +14,13 @@ class RolePermissionSeeder extends Seeder
     public function run(): void
     {
         DB::table('roles')->insert([
-            ['name' => 'receptionist'],
-            ['name' => 'restaurant_staff'],
-            ['name' => 'server'],
-            ['name' => 'manager'],
-            ['name' => 'housekeeper'],
-            ['name' => 'maintenance'],
-            ['name' => 'it'],
+            ['name' => 'receptionist', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'restaurant_staff', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'server', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'manager', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'housekeeper', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'maintenance', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'it', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('permissions')->insert([
