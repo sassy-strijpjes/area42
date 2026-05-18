@@ -1,3 +1,6 @@
-<x-layout.staff pageTitle="Dashboard" :user="user()">
-    Lorem ipsum dolor sit amet consectetur adipisicing elit
+<x-layout.staff
+    pageTitle="Dashboard"
+    :user="user()"
+>
+    Welcome {{ user()->name }}!
 </x-layout.staff>
