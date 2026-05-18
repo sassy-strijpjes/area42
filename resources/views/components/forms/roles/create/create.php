@@ -8,10 +8,17 @@ use Livewire\Component;
 
 new class extends Component
 {
+    public string $prefix;
+
     #[Validate('required|string|max:255|unique:roles,name')]
     public string $name = '';
 
     public array $selectedPermissions = [];
+
+    public function mount()
+    {
+        $this->prefix = request()->routeIs('admin.*') ? 'admin' : 'staff';
+    }
 
     #[Computed]
     public function groupedPermissions()
@@ -52,7 +59,7 @@ new class extends Component
 
             Flux::toast('Role created successfully', variant: 'success');
 
-            $this->redirect(route('admin.roles'), navigate: true);
+            $this->redirect(route("{$this->prefix}.roles"), navigate: true);
         } catch (Exception) {
             DB::rollBack();
 

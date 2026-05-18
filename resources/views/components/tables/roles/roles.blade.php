@@ -26,7 +26,7 @@
                     <flux:dropdown>
                         <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" inset="top bottom"></flux:button>
                         <flux:menu>
-                            <flux:menu.item icon="pencil-square" :href="route('admin.roles.edit', $role->id)">Edit</flux:menu.item>
+                            <flux:menu.item icon="pencil-square" :href="route($prefix . '.roles.edit', $role->id)">Edit</flux:menu.item>
                             <flux:menu.separator />
                             <flux:menu.item
                                 variant="danger"

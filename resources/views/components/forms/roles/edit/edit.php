@@ -7,7 +7,9 @@ use Livewire\Component;
 
 new class extends Component
 {
-    public $roleId;
+    public string $prefix;
+
+    public int $roleId;
 
     public string $name = '';
 
@@ -15,6 +17,8 @@ new class extends Component
 
     public function mount($role = null)
     {
+        $this->prefix = request()->routeIs('admin.*') ? 'admin' : 'staff';
+
         $roleId = is_numeric($role) ? $role : ($role->id ?? null);
 
         if (! $roleId) {
@@ -82,7 +86,7 @@ new class extends Component
 
             Flux::toast('Role updated successfully', variant: 'success');
 
-            $this->redirect(route('admin.roles'), navigate: true);
+            $this->redirect(route("{$this->prefix}.roles"), navigate: true);
         } catch (Exception) {
             DB::rollBack();
 

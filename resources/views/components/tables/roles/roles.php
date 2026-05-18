@@ -10,11 +10,18 @@ new class extends Component
 {
     use WithPagination;
 
+    public string $prefix;
+
     public $sortBy = 'created_at';
 
     public $sortDirection = 'desc';
 
     public string $search = '';
+
+    public function mount()
+    {
+        $this->prefix = request()->routeIs('admin.*') ? 'admin' : 'staff';
+    }
 
     #[On('roles-search')]
     public function updateSearch($value)

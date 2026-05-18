@@ -5,7 +5,7 @@
     <x-slot:headerActions>
         <livewire:forms.search
             placeholder="Search roles..."
-            event="staff-search"
+            event="roles-search"
             size="sm"
         />
 
