@@ -8,7 +8,7 @@
                 placeholder="Search for a role..."
                 event="staff-search"
             />
-            <flux:button icon:trailing="plus">Add</flux:button>
+            <flux:button :href="route('admin.roles.create')" icon:trailing="plus">Add</flux:button>
         </div>
     </x-slot:headerActions>
     <livewire:tables.roles />

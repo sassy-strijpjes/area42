@@ -1,7 +1,5 @@
 <?php
 
-use Flux\Flux;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -29,7 +27,7 @@ new class extends Component {
         $this->email = $email ?? '';
     }
 
-    public function resetPassword(): RedirectResponse|null
+    public function resetPassword(): void
     {
         $this->validate();
 
@@ -54,7 +52,6 @@ new class extends Component {
 
         if (! $user || ! $tokenIsValid) {
             $this->addError('email', 'The reset link is invalid or has expired.');
-            return null;
         }
 
         DB::table($table)
@@ -68,12 +65,12 @@ new class extends Component {
             ->where('email', $user->email)
             ->delete();
 
-        return redirect()
-            ->route("{$this->type}.login")
-            ->with('toast', [
-                'heading' => 'Password reset',
-                'text' => 'You can now log in with your new password.',
-                'variant' => 'success',
-            ]);
+        session()->flash('toast', [
+            'heading' => 'Password reset',
+            'text' => 'You can now log in with your new password.',
+            'variant' => 'success',
+        ]);
+
+        $this->redirect(route("{$this->type}.login"), navigate: true);
     }
 };

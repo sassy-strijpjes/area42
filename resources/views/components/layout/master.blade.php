@@ -15,15 +15,13 @@
             <flux:toast position="top end" />
         @endpersist
 
-        <script>
-            document.addEventListener('livewire:navigated', () => {
-                const toast = @json(session('toast'));
-
-                if (!toast) return;
-
-                Flux.toast(toast);
-            });
-        </script>
+        @if (session()->has('toast'))
+            <script>
+                document.addEventListener('livewire:navigated', () => {
+                    Flux.toast(@json(session('toast')));
+                }, { once: true });
+            </script>
+        @endif
 
         @livewireScripts
         @fluxScripts
