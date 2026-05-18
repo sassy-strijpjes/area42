@@ -14,7 +14,7 @@ new class extends Component {
 
     public string $search = '';
 
-    #[On('staff-search')]
+    #[On('roles-search')]
     public function updateSearch($value)
     {
         $this->search = $value;
@@ -32,19 +32,12 @@ new class extends Component {
     }
 
     #[Computed]
-    public function staff()
+    public function roles()
     {
-        return DB::table('staff')
-            ->leftJoin('staff_roles', 'staff.id', '=', 'staff_roles.staff_id')
-            ->leftJoin('roles', 'staff_roles.role_id', '=', 'roles.id')
-            ->select('staff.*', 'roles.name as role_name')
+        return DB::table('roles')
+            ->select('roles.*')
             ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('staff.name', 'like', "%{$this->search}%")
-                        ->orWhere('staff.email', 'like', "%{$this->search}%")
-                        ->orWhere('staff.type', 'like', "%{$this->search}%")
-                        ->orWhere('roles.name', 'like', "%{$this->search}%");
-                });
+                $query->where('roles.name', 'like', "%{$this->search}%");
             })
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(5);

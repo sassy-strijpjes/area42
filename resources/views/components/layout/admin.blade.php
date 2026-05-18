@@ -32,6 +32,15 @@
                 </flux:sidebar.item>
 
                 <flux:sidebar.item
+                    icon="shield-check"
+                    :href="route('admin.roles')"
+                    :current="request()->routeIs('admin.roles*')"
+                    wire:navigate
+                >
+                    Roles
+                </flux:sidebar.item>
+
+                <flux:sidebar.item
                     icon="document-text"
                     :href="route('admin.logs')"
                     :current="request()->routeIs('admin.logs')"

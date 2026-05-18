@@ -31,7 +31,7 @@
 
                 <flux:table.cell>
                     <flux:badge size="sm">
-                        {{ ucfirst($member->type) }}
+                        {{ $member->role_name ?? 'N/A' }}
                     </flux:badge>
                 </flux:table.cell>
 
