@@ -12,15 +12,19 @@ new class extends Component
 
     public string $prefix;
 
-    public $sortBy = 'created_at';
+    public bool $isAdmin = false;
 
-    public $sortDirection = 'desc';
+    public string $sortBy = 'level';
+
+    public string $sortDirection = 'asc';
 
     public string $search = '';
+    public bool $editingHierarchy = false;
 
     public function mount()
     {
         $this->prefix = request()->routeIs('admin.*') ? 'admin' : 'staff';
+        $this->isAdmin = $this->prefix === 'admin';
     }
 
     #[On('roles-search')]
@@ -47,14 +51,49 @@ new class extends Component
     }
 
     #[Computed]
+    public function canEditHierarchy(): bool
+    {
+        return $this->isAdmin;
+    }
+
+    public function updateHierarchy(array $orderedIds): void
+    {
+        abort_unless($this->isAdmin, 403);
+
+        foreach ($orderedIds as $level => $id) {
+            DB::table('roles')
+                ->where('id', $id)
+                ->update(['level' => $level + 1]);
+        }
+    }
+
+    #[Computed]
     public function roles()
     {
         return DB::table('roles')
             ->select('roles.*')
-            ->when($this->search, function ($query) {
-                $query->where('roles.name', 'like', "%{$this->search}%");
-            })
+            ->when(
+                !$this->isAdmin,
+                fn($q) => $q->where('roles.level', '>', roleLevel())
+            )
+            ->when(
+                $this->search,
+                fn($q) => $q->where('roles.name', 'like', "%{$this->search}%")
+            )
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(5);
+    }
+
+    #[Computed]
+    public function allRoles()
+    {
+        return DB::table('roles')
+            ->when(
+                !$this->isAdmin,
+                fn($q) => $q->where('level', '>', roleLevel())
+            )
+            ->orderBy('level')
+            ->orderBy('name')
+            ->get();
     }
 };

@@ -9,9 +9,11 @@
             size="sm"
         />
 
-        <flux:button :href="route('staff.roles.create')" icon:trailing="plus" size="sm">
-            Add
-        </flux:button>
+        @can('create_roles')
+            <flux:button :href="route('staff.roles.create')" icon:trailing="plus" size="sm">
+                Add
+            </flux:button>
+        @endcan
     </x-slot:headerActions>
 
     <livewire:tables.roles />

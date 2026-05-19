@@ -16,14 +16,16 @@
                     Dashboard
                 </flux:navbar.item>
 
-                <flux:navbar.item
-                    icon="shield-check"
-                    :href="route('staff.roles')"
-                    :current="request()->routeIs('staff.roles*')"
-                    wire:navigate
-                >
-                    Roles
-                </flux:navbar.item>
+                @can('view_roles')
+                    <flux:navbar.item
+                        icon="shield-check"
+                        :href="route('staff.roles')"
+                        :current="request()->routeIs('staff.roles*')"
+                        wire:navigate
+                    >
+                        Roles
+                    </flux:navbar.item>
+                @endcan
             </flux:navbar>
 
             <flux:spacer />
@@ -74,14 +76,16 @@
                         Dashboard
                     </flux:sidebar.item>
 
-                    <flux:navbar.item
-                        icon="shield-check"
-                        :href="route('staff.roles')"
-                        :current="request()->routeIs('staff.roles*')"
-                        wire:navigate
-                    >
-                        Roles
-                    </flux:navbar.item>
+                    @can('view_roles')
+                        <flux:navbar.item
+                            icon="shield-check"
+                            :href="route('staff.roles')"
+                            :current="request()->routeIs('staff.roles*')"
+                            wire:navigate
+                        >
+                            Roles
+                        </flux:navbar.item>
+                    @endcan
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

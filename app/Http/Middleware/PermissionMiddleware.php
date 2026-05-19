@@ -14,23 +14,14 @@ class PermissionMiddleware
      *
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $permission)
+    public function handle(Request $request, Closure $next, string $permission): Response
     {
-        $user = user();
-
-        if (! $user) {
-            abort(401, 'Unauthenticated');
+        if (isAdminPanel()) {
+            return $next($request);
         }
 
-        $hasPermission = DB::table('user_roles')
-            ->join('role_permissions', 'user_roles.role_id', '=', 'role_permissions.role_id')
-            ->join('permissions', 'permissions.id', '=', 'role_permissions.permission_id')
-            ->where('user_roles.user_id', $user->id)
-            ->where('permissions.name', $permission)
-            ->exists();
-
-        if (! $hasPermission) {
-            abort(403, 'Forbidden');
+        if (!can($permission)) {
+            abort(403);
         }
 
         return $next($request);

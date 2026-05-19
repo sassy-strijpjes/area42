@@ -31,13 +31,12 @@ class AuthController extends Controller
 
     public function logout()
     {
-        $isAdmin = (bool) session('admin_id');
-        $routeName = $isAdmin ? 'admin.login' : 'staff.login';
-
-        auth()->logout();
+        $isAdmin = request()->routeIs('admin.*');
 
         session()->forget($isAdmin ? 'admin_id' : 'staff_id');
 
-        return redirect()->route($routeName);
+        return redirect()->route(
+            $isAdmin ? 'admin.login' : 'staff.login'
+        );
     }
 }

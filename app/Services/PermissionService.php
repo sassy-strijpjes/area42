@@ -8,10 +8,10 @@ class PermissionService
 {
     public function can(int $userId, string $permission): bool
     {
-        return DB::table('user_roles')
+        return DB::table('staff_roles')
             ->join(
                 'role_permissions',
-                'user_roles.role_id',
+                'staff_roles.role_id',
                 '=',
                 'role_permissions.role_id'
             )
@@ -21,7 +21,7 @@ class PermissionService
                 '=',
                 'role_permissions.permission_id'
             )
-            ->where('user_roles.user_id', $userId)
+            ->where('staff_roles.staff_id', $userId)
             ->where('permissions.name', $permission)
             ->exists();
     }

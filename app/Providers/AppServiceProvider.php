@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Blade::directive('can', function ($expression) {
-            return "<?php if (can($expression)) { ?>) ?>";
+            return "<?php if (can($expression)) { ?>";
         });
 
         Blade::directive('endcan', function () {
