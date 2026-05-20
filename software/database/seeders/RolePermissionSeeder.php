@@ -24,6 +24,25 @@ class RolePermissionSeeder extends Seeder
         'delete_roles',
     ];
 
+    public array $rolePermissions = [
+        [
+            'role_id' => 4, // manager
+            'permission_id' => 1, // view_roles
+        ],
+        [
+            'role_id' => 4,
+            'permission_id' => 2,
+        ],
+        [
+            'role_id' => 4,
+            'permission_id' => 3,
+        ],
+        [
+            'role_id' => 4,
+            'permission_id' => 4,
+        ]
+    ];
+
     /**
      * Run the database seeds.
      */
@@ -47,8 +66,11 @@ class RolePermissionSeeder extends Seeder
             ], $this->permissions)
         );
 
-        DB::table('role_permissions')->insert([
-            // TODO
-        ]);
+        DB::table('role_permissions')->insert(
+            array_map(fn ($rp) => [
+                'role_id' => $rp['role_id'],
+                'permission_id' => $rp['permission_id'],
+            ], $this->rolePermissions)
+        );
     }
 }
