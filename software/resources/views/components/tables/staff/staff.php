@@ -23,6 +23,12 @@ new class extends Component
         $this->resetPage();
     }
 
+    #[On('item-deleted')]
+    public function refreshStaff()
+    {
+        $this->resetPage();
+    }
+
     public function sort($column)
     {
         if ($this->sortBy === $column) {
@@ -44,8 +50,10 @@ new class extends Component
                 $query->where(function ($q) {
                     $q->where('staff.name', 'like', "%{$this->search}%")
                         ->orWhere('staff.email', 'like', "%{$this->search}%")
-                        ->orWhere('staff.type', 'like', "%{$this->search}%")
-                        ->orWhere('roles.name', 'like', "%{$this->search}%");
+                        ->orWhere(function ($q2) {
+                            $q2->whereNotNull('roles.name')
+                                ->where('roles.name', 'like', "%{$this->search}%");
+                        });
                 });
             })
             ->orderBy($this->sortBy, $this->sortDirection)

@@ -8,7 +8,7 @@
                 placeholder="Search for a staff member..."
                 event="staff-search"
             />
-            <flux:button icon:trailing="plus">Add</flux:button>
+            <flux:button :href="route('admin.staff.create')" icon:trailing="plus">Add</flux:button>
         </div>
     </x-slot:headerActions>
     <livewire:tables.staff />

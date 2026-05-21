@@ -23,6 +23,7 @@ new class extends Component
         }
 
         DB::beginTransaction();
+
         try {
             if ($this->table === 'roles') {
                 DB::table('role_permissions')
