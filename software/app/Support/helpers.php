@@ -74,7 +74,13 @@ if (!function_exists('can')) {
             return true;
         }
 
+        $user = user();
+
+        if (!$user) {
+            return false;
+        }
+
         return app(PermissionService::class)
-            ->can(user()->id, $permission);
+            ->can($user->id, $permission);
     }
 }

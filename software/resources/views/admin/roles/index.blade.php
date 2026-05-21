@@ -6,7 +6,7 @@
         <div class="flex flex-row gap-3">
             <livewire:forms.search
                 placeholder="Search for a role..."
-                event="staff-search"
+                event="roles-search"
             />
             <flux:button :href="route('admin.roles.create')" icon:trailing="plus">Add</flux:button>
         </div>
