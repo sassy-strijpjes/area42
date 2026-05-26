@@ -14,12 +14,11 @@ new class extends Component
 
     public bool $isAdmin = false;
 
-    public string $sortBy = 'level';
+    public string $sortBy = 'name';
 
     public string $sortDirection = 'asc';
 
     public string $search = '';
-    public bool $editingHierarchy = false;
 
     public function mount()
     {
@@ -51,49 +50,15 @@ new class extends Component
     }
 
     #[Computed]
-    public function canEditHierarchy(): bool
-    {
-        return $this->isAdmin;
-    }
-
-    public function updateHierarchy(array $orderedIds): void
-    {
-        abort_unless($this->isAdmin, 403);
-
-        foreach ($orderedIds as $level => $id) {
-            DB::table('roles')
-                ->where('id', $id)
-                ->update(['level' => $level + 1]);
-        }
-    }
-
-    #[Computed]
     public function roles()
     {
         return DB::table('roles')
             ->select('roles.*')
-            ->when(
-                !$this->isAdmin,
-                fn($q) => $q->where('roles.level', '>', roleLevel())
-            )
             ->when(
                 $this->search,
                 fn($q) => $q->where('roles.name', 'like', "%{$this->search}%")
             )
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(5);
-    }
-
-    #[Computed]
-    public function allRoles()
-    {
-        return DB::table('roles')
-            ->when(
-                !$this->isAdmin,
-                fn($q) => $q->where('level', '>', roleLevel())
-            )
-            ->orderBy('level')
-            ->orderBy('name')
-            ->get();
     }
 };

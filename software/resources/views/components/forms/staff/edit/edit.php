@@ -45,7 +45,7 @@ new class extends Component
 
             $this->roles = DB::table("roles")
                 ->select('id', 'name')
-                ->orderBy('level', 'asc')
+                ->orderBy('name', 'asc')
                 ->get();
 
             $currentRole = DB::table("staff_roles")

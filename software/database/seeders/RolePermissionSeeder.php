@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\DB;
 class RolePermissionSeeder extends Seeder
 {
     public array $roles = [
+        'it',
+        'manager',
         'receptionist',
         'restaurant_staff',
         'server',
-        'manager',
         'housekeeper',
         'maintenance',
-        'it',
     ];
 
     public array $permissions = [
@@ -26,7 +26,7 @@ class RolePermissionSeeder extends Seeder
 
     public array $rolePermissions = [
         [
-            'role_id' => 4, // manager
+            'role_id' => 1, // IT
             'permission_id' => 1, // view_roles
         ],
         [
@@ -41,6 +41,10 @@ class RolePermissionSeeder extends Seeder
             'role_id' => 4,
             'permission_id' => 4,
         ]
+    ];
+
+    public array $staffRoles = [
+        ['staff_id' => 1,  'role_id' => 1],
     ];
 
     /**
@@ -71,6 +75,13 @@ class RolePermissionSeeder extends Seeder
                 'role_id' => $rp['role_id'],
                 'permission_id' => $rp['permission_id'],
             ], $this->rolePermissions)
+        );
+
+        DB::table('staff_roles')->insert(
+            array_map(fn ($sr) => [
+                'staff_id' => $sr['staff_id'],
+                'role_id' => $sr['role_id'],
+            ], $this->staffRoles)
         );
     }
 }

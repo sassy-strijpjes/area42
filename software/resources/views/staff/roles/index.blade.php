@@ -9,7 +9,7 @@
             size="sm"
         />
 
-        @can('create_roles')
+        @can('add_roles')
             <flux:button :href="route('staff.roles.create')" icon:trailing="plus" size="sm">
                 Add
             </flux:button>
