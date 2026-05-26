@@ -3,16 +3,17 @@
 Group project "Area42-1" from semester 2.
 
 ## Table of contents
+
 - [Local installation](#local-installation)
-  - [Requirements](#requirements)
-  - [Getting started](#getting-started)
-  - [Rebuilding from scratch](#rebuilding-from-scratch)
-  - [Logins](#logins)
-  - [Project structure](#project-structure)
-  - [Tech stack](#tech-stack)
-  - [Running artisan commands](#running-artisan-commands)
-  - [Viewing logs](#viewing-logs)
-  - [Database access](#database-access)
+    - [Requirements](#requirements)
+    - [Getting started](#getting-started)
+    - [Rebuilding from scratch](#rebuilding-from-scratch)
+    - [Logins](#logins)
+    - [Project structure](#project-structure)
+    - [Tech stack](#tech-stack)
+    - [Running artisan commands](#running-artisan-commands)
+    - [Viewing logs](#viewing-logs)
+    - [Database access](#database-access)
 
 ## Local installation
 
@@ -29,7 +30,10 @@ Clone the repository and navigate to the project folder. Then run:
 docker compose up --build
 ```
 
-This will build the PHP image, install all dependencies, run migrations, seed the database, and start the development server. The application will be available at `http://localhost:8000` once the output shows the Laravel development server has started.
+This will build the PHP image, install all dependencies, run migrations, seed
+the database, and start the development server. The application will be
+available at `http://localhost:8000` once the output shows the Laravel
+development server has started.
 
 ### Rebuilding from scratch
 
@@ -52,10 +56,12 @@ docker compose up
 There are two separate authentication systems in this application.
 
 **Staff portal** at [localhost:8000](http://localhost:8000)
+
 - **Email**: jdoe@area42.com
 - **Password**: password
 
 **Admin portal** at [localhost:8000/admin](http://localhost:8000/admin)
+
 - **Email**: admin@area42.com
 - **Password**: password
 
@@ -87,6 +93,7 @@ To run artisan commands against the running container:
 ```bash
 docker compose exec app php artisan <command>
 ```
+
 ### Viewing logs
 
 ```bash
@@ -96,12 +103,13 @@ docker compose logs -f db
 
 ### Database access
 
-Postgres is exposed on port 5432 of your local machine. You can connect with any database client using these credentials:
+Postgres is exposed on port 5432 of your local machine. You can connect with any
+database client using these credentials:
 
-|Field|Value|
-|---|---|
-|Host|localhost|
-|Port|5432|
-|Database|area42_software|
-|Username|postgres|
-|Password|secret|
+| Field    | Value           |
+| -------- | --------------- |
+| Host     | localhost       |
+| Port     | 5432            |
+| Database | area42_software |
+| Username | postgres        |
+| Password | secret          |
