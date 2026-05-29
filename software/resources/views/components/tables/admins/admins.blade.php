@@ -16,7 +16,7 @@
     </flux:table.columns>
 
     <flux:table.rows>
-        @foreach ($this->admins as $admin)
+        @forelse ($this->admins as $admin)
             <flux:table.row :key="$admin->id">
                 <flux:table.cell class="font-medium">
                     {{ $admin->name }}
@@ -57,6 +57,17 @@
                     />
                 </flux:table.cell>
             </flux:table.row>
-        @endforeach
+        @empty
+            <flux:table.row>
+                <flux:table.cell colspan="4" class="py-12 text-center">
+                    <div class="flex flex-col items-center justify-center gap-2 text-zinc-500 dark:text-zinc-400">
+                        <flux:heading size="sm">No administrators found</flux:heading>
+                        <flux:text class="max-w-sm">
+                            Try adjusting your search or add a new administrator.
+                        </flux:text>
+                    </div>
+                </flux:table.cell>
+            </flux:table.row>
+        @endforelse
     </flux:table.rows>
 </flux:table>
