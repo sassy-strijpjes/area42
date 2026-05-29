@@ -47,13 +47,15 @@
                                 </flux:menu>
                             </flux:dropdown>
 
-                            <livewire:modals.delete-confirmation
-                                :key="'delete-' . $role->id"
-                                :modalName="'delete-role-' . $role->id"
-                                :itemName="$role->name"
-                                table="roles"
-                                :itemId="$role->id"
-                            />
+                            @can('delete_roles')
+                                <livewire:modals.delete-confirmation
+                                    :key="'delete-' . $role->id"
+                                    :modalName="'delete-role-' . $role->id"
+                                    :itemName="$role->name"
+                                    table="roles"
+                                    :itemId="$role->id"
+                                />
+                            @endcan
                         </flux:table.cell>
                     @endif
                 </flux:table.row>

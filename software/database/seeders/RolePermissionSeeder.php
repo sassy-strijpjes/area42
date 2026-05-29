@@ -18,6 +18,10 @@ class RolePermissionSeeder extends Seeder
     ];
 
     public array $permissions = [
+        'view_staff',
+        'add_staff',
+        'edit_staff',
+        'delete_staff',
         'view_roles',
         'add_roles',
         'edit_roles',

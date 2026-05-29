@@ -24,13 +24,13 @@
         />
 
         <flux:select
-            wire:model="role"
+            wire:model.number="role"
             label="Role"
             placeholder="Choose a role..."
         >
-            @foreach($roles as $role)
-                <option :value="$role->id">
-                    {{ $role->name === 'it' ? strtoupper($role->name) : ucfirst(str_replace('_', ' ', $role->name)) }}
+            @foreach($roles as $r)
+                <option value="{{ $r->id }}" @selected($r->id === $this->role)>
+                    {{ $r->name === 'it' ? strtoupper($r->name) : ucfirst(str_replace('_', ' ', $r->name)) }}
                 </option>
             @endforeach
         </flux:select>

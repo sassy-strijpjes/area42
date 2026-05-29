@@ -10,11 +10,21 @@ new class extends Component
 {
     use WithPagination;
 
+    public string $prefix;
+
+    public bool $isAdmin = false;
+
     public $sortBy = 'created_at';
 
     public $sortDirection = 'desc';
 
     public string $search = '';
+
+    public function mount()
+    {
+        $this->prefix = request()->routeIs('admin.*') ? 'admin' : 'staff';
+        $this->isAdmin = $this->prefix === 'admin';
+    }
 
     #[On('staff-search')]
     public function updateSearch($value)
@@ -55,6 +65,9 @@ new class extends Component
                                 ->where('roles.name', 'like', "%{$this->search}%");
                         });
                 });
+            })
+            ->when(!$this->isAdmin, function ($query) {
+                $query->where('staff.id', '!=', user()->id);
             })
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(5);

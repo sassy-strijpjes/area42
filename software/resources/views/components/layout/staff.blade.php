@@ -16,6 +16,17 @@
                     Dashboard
                 </flux:navbar.item>
 
+                @can('view_staff')
+                    <flux:navbar.item
+                        icon="users"
+                        :href="route('staff.staff')"
+                        :current="request()->routeIs('staff.staff*')"
+                        wire:navigate
+                    >
+                        Staff
+                    </flux:navbar.item>
+                @endcan
+
                 @can('view_roles')
                     <flux:navbar.item
                         icon="shield-check"

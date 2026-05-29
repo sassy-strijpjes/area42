@@ -8,6 +8,8 @@ use Livewire\Component;
 
 new class extends Component
 {
+    public string $prefix;
+
     public $staff;
 
     public $roles;
@@ -24,10 +26,12 @@ new class extends Component
     public string $password = '';
 
     #[Validate('required|integer|exists:roles,id')]
-    public int $role;
+    public int $role = 0;
 
     public function mount($staff)
     {
+        $this->prefix = request()->routeIs('admin.*') ? 'admin' : 'staff';
+
         $staffId = is_numeric($staff) ? $staff : ($staff->id ?? null);
 
         if (! $staffId) {
@@ -91,7 +95,7 @@ new class extends Component
 
             Flux::toast('Staff member edited successfully', variant: 'success');
 
-            $this->redirect(route("admin.staff"), navigate: true);
+            $this->redirect(route("{$this->prefix}.staff"), navigate: true);
         } catch (Exception) {
             DB::rollBack();
 

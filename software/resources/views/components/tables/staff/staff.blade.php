@@ -44,33 +44,41 @@
                     {{ \Carbon\Carbon::parse($member->created_at)->format('D F jS Y g:i A') }}
                 </flux:table.cell>
 
-                <flux:table.cell>
-                    <flux:dropdown>
-                        <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal"
-                                     inset="top bottom"></flux:button>
-                        <flux:menu>
-                            <flux:menu.item icon="pencil-square"
-                                            :href="route('admin.staff.edit', $member->id)">Edit
-                            </flux:menu.item>
-                            <flux:menu.separator/>
-                            <flux:menu.item
-                                variant="danger"
-                                icon="trash"
-                                x-on:click="$flux.modal('delete-staff-{{ $member->id }}').show()"
-                            >
-                                Delete
-                            </flux:menu.item>
-                        </flux:menu>
-                    </flux:dropdown>
+                @if(can('edit_staff') && can('delete_staff'))
+                    <flux:table.cell>
+                        <flux:dropdown>
+                            <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal"
+                                         inset="top bottom"></flux:button>
+                            <flux:menu>
+                                @can('edit_staff')
+                                    <flux:menu.item icon="pencil-square"
+                                                    :href="route($prefix . '.staff.edit', $member->id)">Edit
+                                    </flux:menu.item>
+                                @endcan
+                                @can('delete_staff')
+                                    <flux:menu.separator/>
+                                    <flux:menu.item
+                                        variant="danger"
+                                        icon="trash"
+                                        x-on:click="$flux.modal('delete-staff-{{ $member->id }}').show()"
+                                    >
+                                        Delete
+                                    </flux:menu.item>
+                                @endcan
+                            </flux:menu>
+                        </flux:dropdown>
 
-                    <livewire:modals.delete-confirmation
-                        :key="'delete-' . $member->id"
-                        :modalName="'delete-staff-' . $member->id"
-                        :itemName="$member->name"
-                        table="staff"
-                        :itemId="$member->id"
-                    />
-                </flux:table.cell>
+                        @can('delete_staff')
+                            <livewire:modals.delete-confirmation
+                                :key="'delete-' . $member->id"
+                                :modalName="'delete-staff-' . $member->id"
+                                :itemName="$member->name"
+                                table="staff"
+                                :itemId="$member->id"
+                            />
+                        @endcan
+                    </flux:table.cell>
+                @endif
             </flux:table.row>
         @endforeach
     </flux:table.rows>

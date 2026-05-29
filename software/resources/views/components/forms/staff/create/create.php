@@ -6,7 +6,10 @@ use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
+    public string $prefix;
+
     public $roles;
 
     #[Validate('required|string|max:255')]
@@ -26,6 +29,7 @@ new class extends Component {
 
     public function mount()
     {
+        $this->prefix = request()->routeIs('admin.*') ? 'admin' : 'staff';
         $this->roles = DB::table("roles")
             ->select('id', 'name')
             ->orderBy('name', 'asc')
@@ -54,7 +58,7 @@ new class extends Component {
 
             Flux::toast('Staff member added successfully', variant: 'success');
 
-            $this->redirect(route("admin.staff"), navigate: true);
+            $this->redirect(route("{$this->prefix}.staff"), navigate: true);
         } catch (Exception) {
             DB::rollBack();
 
