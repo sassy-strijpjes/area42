@@ -23,6 +23,15 @@
                 </flux:sidebar.item>
 
                 <flux:sidebar.item
+                    icon="user-group"
+                    :href="route('admin.admins')"
+                    :current="request()->routeIs('admin.admins*')"
+                    wire:navigate
+                >
+                    Administrators
+                </flux:sidebar.item>
+
+                <flux:sidebar.item
                     icon="users"
                     :href="route('admin.staff')"
                     :current="request()->routeIs('admin.staff*')"

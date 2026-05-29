@@ -10,6 +10,9 @@ Route::name('admin.')->prefix('admin')->middleware(['auth'])->group(function () 
 
 Route::name('admin.')->prefix('admin')->middleware(['auth'])->group(function () {
     Route::view('/', 'admin.dashboard')->name('dashboard');
+    Route::view('admins', 'admin.admins.index')->name('admins');
+    Route::view('admins/create', 'admin.admins.create')->name('admins.create');
+    Route::view('admins/{admin}/edit', 'admin.admins.edit')->name('admins.edit');
     Route::view('staff', 'admin.staff.index')->name('staff');
     Route::view('staff/create', 'admin.staff.create')->name('staff.create');
     Route::view('staff/{staff}/edit', 'admin.staff.edit')->name('staff.edit');
