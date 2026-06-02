@@ -43,13 +43,13 @@
                         <flux:navbar.item
                             icon="calendar-days"
                             icon:trailing="chevron-down"
-                            :current="request()->routeIs('staff.bookings*')"
+                            :current="request()->routeIs('staff.restaurant.bookings*')"
                             wire:navigate
                         >
                             Bookings
                         </flux:navbar.item>
                         <flux:navmenu>
-                            <flux:navmenu.item href="{{ route('staff.restaurant.bookings') }}" :current="request()->routeIs('staff.bookings.restaurant*')">Restaurant</flux:navmenu.item>
+                            <flux:navmenu.item href="{{ route('staff.restaurant.bookings') }}">Restaurant</flux:navmenu.item>
                             <flux:navmenu.item href="#">Accomodations</flux:navmenu.item>
                             <flux:navmenu.item href="#">Bikes</flux:navmenu.item>
                         </flux:navmenu>
