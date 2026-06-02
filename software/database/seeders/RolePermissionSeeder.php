@@ -26,6 +26,10 @@ class RolePermissionSeeder extends Seeder
         'add_roles',
         'edit_roles',
         'delete_roles',
+        'view_restaurant-bookings',
+        'add_restaurant-bookings',
+        'edit_restaurant-bookings',
+        'delete_restaurant-bookings',
     ];
 
     public array $rolePermissions = [
@@ -44,7 +48,23 @@ class RolePermissionSeeder extends Seeder
         [
             'role_id' => 4,
             'permission_id' => 4,
-        ]
+        ],
+        [
+            'role_id' => 4,
+            'permission_id' => 9,
+        ],
+        [
+            'role_id' => 4,
+            'permission_id' => 10,
+        ],
+        [
+            'role_id' => 4,
+            'permission_id' => 11,
+        ],
+        [
+            'role_id' => 4,
+            'permission_id' => 12,
+        ],
     ];
 
     public array $staffRoles = [
