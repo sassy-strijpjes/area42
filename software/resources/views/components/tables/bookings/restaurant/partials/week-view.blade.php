@@ -70,36 +70,38 @@
                                                 </div>
                                             </div>
 
-                                            <flux:dropdown position="bottom end">
-                                                <flux:button
-                                                    icon="ellipsis-horizontal"
-                                                    variant="ghost"
-                                                    size="xs"
-                                                />
+                                            @if(can('edit_restaurant-bookings') || can('cancel_restaurant-bookings'))
+                                                <flux:dropdown position="bottom end">
+                                                    <flux:button
+                                                        icon="ellipsis-horizontal"
+                                                        variant="ghost"
+                                                        size="xs"
+                                                    />
 
-                                                <flux:menu>
-                                                    @can('edit_restaurant-bookings')
-                                                        <flux:menu.item
-                                                            :href="route('staff.restaurant.bookings.edit', $booking->id)"
-                                                            icon="pencil-square"
-                                                        >
-                                                            Edit
-                                                        </flux:menu.item>
-                                                    @endcan
-
-                                                    @can('cancel_restaurant-bookings')
-                                                        @if($booking->status !== 'cancelled')
+                                                    <flux:menu>
+                                                        @can('edit_restaurant-bookings')
                                                             <flux:menu.item
-                                                                wire:click="cancel({{ $booking->id }})"
-                                                                icon="x-mark"
-                                                                variant="danger"
+                                                                :href="route('staff.restaurant.bookings.edit', $booking->id)"
+                                                                icon="pencil-square"
                                                             >
-                                                                Cancel
+                                                                Edit
                                                             </flux:menu.item>
-                                                        @endif
-                                                    @endcan
-                                                </flux:menu>
-                                            </flux:dropdown>
+                                                        @endcan
+
+                                                        @can('cancel_restaurant-bookings')
+                                                            @if($booking->status !== 'cancelled')
+                                                                <flux:menu.item
+                                                                    wire:click="cancel({{ $booking->id }})"
+                                                                    icon="x-mark"
+                                                                    variant="danger"
+                                                                >
+                                                                    Cancel
+                                                                </flux:menu.item>
+                                                            @endif
+                                                        @endcan
+                                                    </flux:menu>
+                                                </flux:dropdown>
+                                            @endif
                                         </div>
                                     </div>
                                 @endforeach

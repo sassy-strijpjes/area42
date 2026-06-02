@@ -3,12 +3,6 @@
     :user="user()"
 >
     <x-slot:headerActions>
-        <livewire:forms.search
-            placeholder="Search restaurant bookings..."
-            event="restaurant-bookings-search"
-            size="sm"
-        />
-
         @can('add_restaurant-bookings')
             <flux:button :href="route('staff.restaurant.bookings.create')" icon:trailing="plus" size="sm">
                 Add

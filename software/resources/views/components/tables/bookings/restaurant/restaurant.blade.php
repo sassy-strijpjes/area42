@@ -19,13 +19,6 @@
                     Week
                 </flux:button>
             </flux:button.group>
-            <flux:button
-                wire:click="$toggle('showCancelled')"
-                variant="{{ $showCancelled ? 'primary' : 'filled' }}"
-                size="sm"
-            >
-                Cancelled
-            </flux:button>
         </div>
 
         <div class="flex items-center gap-2">
@@ -50,6 +43,22 @@
                 icon:trailing="chevron-right"
                 size="sm"
             />
+
+            <flux:dropdown>
+                <flux:button
+                    variant="ghost"
+                    icon="adjustments-vertical"
+                    size="sm"
+                />
+
+                <flux:menu>
+                    <flux:menu.radio.group wire:model="sortBy">
+                        <flux:menu.item wire:click="$toggle('showCancelled')">
+                            {{ $showCancelled ? 'Hide cancelled bookings' : 'Show cancelled bookings' }}
+                        </flux:menu.item>
+                    </flux:menu.radio.group>
+                </flux:menu>
+            </flux:dropdown>
         </div>
     </div>
 
