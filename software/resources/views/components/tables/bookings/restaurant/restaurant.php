@@ -9,6 +9,9 @@ new class extends Component
 {
     public string $view = 'day';
 
+    public bool $showCancelled = false;
+    public ?int $bookingToCancel = null;
+
     public string $currentDate;
 
     public function mount()
@@ -42,10 +45,19 @@ new class extends Component
     public function bookings()
     {
         return DB::table('table_bookings')
-            ->join('restaurant_tables', 'table_bookings.table_id', '=', 'restaurant_tables.id')
+            ->join(
+                'restaurant_tables',
+                'table_bookings.table_id',
+                '=',
+                'restaurant_tables.id'
+            )
             ->select(
                 'table_bookings.*',
                 'restaurant_tables.name as table_name'
+            )
+            ->when(
+                ! $this->showCancelled,
+                fn ($q) => $q->where('table_bookings.status', '!=', 'cancelled')
             )
             ->when(
                 $this->view === 'day',
@@ -58,6 +70,7 @@ new class extends Component
                     ]
                 )
             )
+            ->orderBy('booking_start')
             ->get();
     }
 
@@ -67,5 +80,31 @@ new class extends Component
 
         return collect(range(0, 6))
             ->map(fn ($i) => $start->copy()->addDays($i));
+    }
+
+    public function cancelBooking(): void
+    {
+        if (! $this->bookingToCancel) {
+            return;
+        }
+
+        DB::table('table_bookings')
+            ->where('id', $this->bookingToCancel)
+            ->update([
+                'status' => 'cancelled',
+                'cancelled_at' => now(),
+            ]);
+
+        $this->bookingToCancel = null;
+
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => 'Booking cancelled successfully.',
+        ]);
+    }
+
+    public function confirmCancel(int $bookingId): void
+    {
+        $this->bookingToCancel = $bookingId;
     }
 };

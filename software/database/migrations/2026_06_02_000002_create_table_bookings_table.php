@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('party_size');
             $table->text('notes')->nullable();
             $table->string('status')->default('pending');
+            $table->datetime('cancelled_at')->nullable();
             $table->timestamps();
         });
     }

@@ -10,7 +10,7 @@
         />
 
         @can('add_restaurant-bookings')
-            <flux:button :href="route('staff.roles.create')" icon:trailing="plus" size="sm">
+            <flux:button :href="route('staff.restaurant.bookings.create')" icon:trailing="plus" size="sm">
                 Add
             </flux:button>
         @endcan

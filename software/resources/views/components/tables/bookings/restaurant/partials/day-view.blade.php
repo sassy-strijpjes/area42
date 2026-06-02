@@ -6,9 +6,19 @@
                 {{ Carbon::parse($currentDate)->format('l, d M Y') }}
             </h3>
 
-            <flux:badge>
-                {{ $this->bookings->count() }} bookings
-            </flux:badge>
+            <div>
+                <flux:badge>
+                    {{ $this->bookings->where('status', '!=', 'cancelled')->count() }}
+                    active
+                </flux:badge>
+
+                @if($showCancelled)
+                    <flux:badge color="red">
+                        {{ $this->bookings->where('status', 'cancelled')->count() }}
+                        cancelled
+                    </flux:badge>
+                @endif
+            </div>
         </div>
     </div>
 
@@ -25,23 +35,72 @@
                     <div class="flex flex-wrap gap-2">
                         @forelse(($this->bookings->groupBy('table_id')[$table->id] ?? collect()) as $booking)
                             <div
-                                class="min-w-45 rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-950 dark:bg-green-950/40"
+                                @class([
+                                    'min-w-45 rounded-lg border p-3',
+                                    'border-green-200 bg-green-50 dark:border-green-950 dark:bg-green-950/40'
+                                        => $booking->status !== 'cancelled',
+                                    'border-red-200 bg-red-50 dark:border-red-950 dark:bg-red-950/40'
+                                        => $booking->status === 'cancelled',
+                                ])
                             >
-                                <div class="font-medium text-zinc-900 dark:text-zinc-100">
-                                    {{ $booking->guest_name }}
-                                </div>
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="flex-1">
+                                        <div
+                                            @class([
+                                                'truncate text-sm font-medium',
+                                                'text-zinc-900 dark:text-zinc-100'
+                                                    => $booking->status !== 'cancelled',
+                                                'line-through text-red-700 dark:text-red-300'
+                                                    => $booking->status === 'cancelled',
+                                            ])
+                                        >
+                                            {{ $booking->guest_name }}
+                                        </div>
 
-                                <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-300">
-                                    {{ Carbon::parse($booking->booking_start)->format('H:i') }}
+                                        <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-300">
+                                            {{ Carbon::parse($booking->booking_start)->format('H:i') }}
 
-                                    @if($booking->booking_end)
-                                        -
-                                        {{ Carbon::parse($booking->booking_end)->format('H:i') }}
-                                    @endif
-                                </div>
+                                            @if($booking->booking_end)
+                                                -
+                                                {{ Carbon::parse($booking->booking_end)->format('H:i') }}
+                                            @endif
+                                        </div>
 
-                                <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-300">
-                                    {{ $booking->party_size }} guests
+                                        <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-300">
+                                            {{ $booking->party_size }} guests
+                                        </div>
+                                    </div>
+
+                                    <flux:dropdown position="bottom end">
+                                        <flux:button
+                                            icon="ellipsis-horizontal"
+                                            variant="ghost"
+                                            size="xs"
+                                        />
+
+                                        <flux:menu>
+                                            @can('edit_restaurant-bookings')
+                                                <flux:menu.item
+                                                    :href="route('staff.restaurant.bookings.edit', $booking->id)"
+                                                    icon="pencil-square"
+                                                >
+                                                    Edit
+                                                </flux:menu.item>
+                                            @endcan
+
+                                            @can('delete_restaurant-bookings')
+                                                @if($booking->status !== 'cancelled')
+                                                    <flux:menu.item
+                                                        wire:click="confirmCancel({{ $booking->id }})"
+                                                        icon="x-mark"
+                                                        variant="danger"
+                                                    >
+                                                        Cancel
+                                                    </flux:menu.item>
+                                                @endif
+                                            @endcan
+                                        </flux:menu>
+                                    </flux:dropdown>
                                 </div>
                             </div>
                         @empty

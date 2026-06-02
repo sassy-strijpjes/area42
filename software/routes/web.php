@@ -19,6 +19,8 @@ Route::name('staff.')->middleware(['auth'])->group(function () {
     Route::view('staff/create', 'staff.staff.create')->middleware('permission:add_staff')->name('staff.create');
     Route::view('staff/{staff}/edit', 'staff.staff.edit')->middleware('permission:edit_staff')->name('staff.edit');
     Route::view('bookings/restaurant', 'staff.bookings.restaurant.index')->middleware('permission:view_restaurant-bookings')->name('restaurant.bookings');
+    Route::view('bookings/restaurant/create', 'staff.bookings.restaurant.create')->middleware('permission:add_restaurant-bookings')->name('restaurant.bookings.create');
+    Route::view('bookings/restaurant/{booking}/edit', 'staff.bookings.restaurant.edit')->middleware('permission:edit_restaurant-bookings')->name('restaurant.bookings.edit');
     Route::get('login', [AuthController::class, 'type'])->name('login');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });

@@ -19,6 +19,13 @@
                     Week
                 </flux:button>
             </flux:button.group>
+            <flux:button
+                wire:click="$toggle('showCancelled')"
+                variant="{{ $showCancelled ? 'primary' : 'filled' }}"
+                size="sm"
+            >
+                Cancelled
+            </flux:button>
         </div>
 
         <div class="flex items-center gap-2">
@@ -51,4 +58,38 @@
     @else
         @include('components.tables.bookings.restaurant.partials.week-view')
     @endif
+
+    <flux:modal
+        wire:model="bookingToCancel"
+        class="max-w-md"
+    >
+        <div class="space-y-4">
+            <div>
+                <flux:heading size="lg">
+                    Cancel booking
+                </flux:heading>
+
+                <flux:text class="mt-2">
+                    Are you sure you want to cancel this booking?
+                    This action cannot be undone.
+                </flux:text>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <flux:button
+                    variant="ghost"
+                    wire:click="$set('bookingToCancel', null)"
+                >
+                    Keep booking
+                </flux:button>
+
+                <flux:button
+                    variant="danger"
+                    wire:click="cancelBooking"
+                >
+                    Cancel
+                </flux:button>
+            </div>
+        </div>
+    </flux:modal>
 </div>
