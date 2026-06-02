@@ -13,12 +13,13 @@ return new class extends Migration
             $table->foreignId('table_id')->constrained('restaurant_tables');
             $table->string('guest_name');
             $table->string('guest_phone')->nullable();
-            $table->dateTime('booking_start');
-            $table->dateTime('booking_end')->nullable();
+            $table->date('booking_date');
+            $table->time('booking_start');
+            $table->time('booking_end')->nullable();
             $table->integer('party_size');
             $table->text('notes')->nullable();
             $table->string('status')->default('pending');
-            $table->datetime('cancelled_at')->nullable();
+            $table->dateTime('cancelled_at')->nullable();
             $table->timestamps();
         });
     }

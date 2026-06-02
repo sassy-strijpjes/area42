@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\PermissionService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 function panel(): string
@@ -82,5 +83,16 @@ if (!function_exists('can')) {
 
         return app(PermissionService::class)
             ->can($user->id, $permission);
+    }
+}
+
+if (!function_exists('convert')) {
+    function convert(?string $time): ?string
+    {
+        if (! $time) {
+            return null;
+        }
+
+        return Carbon::parse($time)->format('H:i');
     }
 }

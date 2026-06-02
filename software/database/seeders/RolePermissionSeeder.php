@@ -29,7 +29,7 @@ class RolePermissionSeeder extends Seeder
         'view_restaurant-bookings',
         'add_restaurant-bookings',
         'edit_restaurant-bookings',
-        'delete_restaurant-bookings',
+        'cancel_restaurant-bookings',
     ];
 
     public array $rolePermissions = [

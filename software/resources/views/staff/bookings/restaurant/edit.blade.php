@@ -2,5 +2,5 @@
     pageTitle="Edit restaurant booking"
     :user="user()"
 >
-    <livewire:forms.roles.edit :role="$role" />
+    <livewire:forms.bookings.restaurant.edit :booking="$booking" />
 </x-layout.staff>

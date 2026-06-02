@@ -9,7 +9,7 @@
                     Table
                 </th>
 
-                @foreach($this->weekDays as $day)
+                @foreach($this->weekDays() as $day)
                     <th class="px-4 py-3 text-center">
                         <div class="font-medium text-zinc-900 dark:text-zinc-100">
                             {{ $day->format('D') }}
@@ -30,7 +30,7 @@
                         {{ $table->name }}
                     </td>
 
-                    @foreach($this->weekDays as $day)
+                    @foreach($this->weekDays() as $day)
                         @php
                             $dayBookings = $this->bookings
                                 ->where('table_id', $table->id)
@@ -66,7 +66,7 @@
                                                 </div>
 
                                                 <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-300">
-                                                    {{ Carbon::parse($booking->booking_start)->format('H:i') }}
+                                                    {{ Carbon::createFromFormat('H:i:s', $booking->booking_start)->format('H:i') }}
                                                 </div>
                                             </div>
 
@@ -87,10 +87,10 @@
                                                         </flux:menu.item>
                                                     @endcan
 
-                                                    @can('delete_restaurant-bookings')
+                                                    @can('cancel_restaurant-bookings')
                                                         @if($booking->status !== 'cancelled')
                                                             <flux:menu.item
-                                                                wire:click="confirmCancel({{ $booking->id }})"
+                                                                wire:click="cancel({{ $booking->id }})"
                                                                 icon="x-mark"
                                                                 variant="danger"
                                                             >

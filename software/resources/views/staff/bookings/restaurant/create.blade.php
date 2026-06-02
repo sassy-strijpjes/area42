@@ -2,5 +2,5 @@
     pageTitle="Create restaurant booking"
     :user="user()"
 >
-    <livewire:forms.roles.create />
+    <livewire:forms.bookings.restaurant.create />
 </x-layout.staff>

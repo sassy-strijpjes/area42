@@ -85,7 +85,7 @@
 
                 <flux:button
                     variant="danger"
-                    wire:click="cancelBooking"
+                    wire:click="cancel"
                 >
                     Cancel
                 </flux:button>

@@ -58,7 +58,7 @@
                                         </div>
 
                                         <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-300">
-                                            {{ Carbon::parse($booking->booking_start)->format('H:i') }}
+                                            {{ Carbon::createFromFormat('H:i:s', $booking->booking_start)->format('H:i') }}
 
                                             @if($booking->booking_end)
                                                 -
@@ -88,10 +88,10 @@
                                                 </flux:menu.item>
                                             @endcan
 
-                                            @can('delete_restaurant-bookings')
+                                            @can('cancel_restaurant-bookings')
                                                 @if($booking->status !== 'cancelled')
                                                     <flux:menu.item
-                                                        wire:click="confirmCancel({{ $booking->id }})"
+                                                        wire:click="cancel({{ $booking->id }})"
                                                         icon="x-mark"
                                                         variant="danger"
                                                     >

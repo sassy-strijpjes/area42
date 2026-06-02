@@ -1,6 +1,8 @@
 <?php
 
 use Carbon\Carbon;
+use Flux\Flux;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -10,7 +12,6 @@ new class extends Component
     public string $view = 'day';
 
     public bool $showCancelled = false;
-    public ?int $bookingToCancel = null;
 
     public string $currentDate;
 
@@ -61,20 +62,17 @@ new class extends Component
             )
             ->when(
                 $this->view === 'day',
-                fn ($q) => $q->whereDate('booking_start', $this->currentDate),
-                fn ($q) => $q->whereBetween(
-                    'booking_start',
-                    [
-                        Carbon::parse($this->currentDate)->startOfWeek(),
-                        Carbon::parse($this->currentDate)->endOfWeek(),
-                    ]
-                )
+                fn ($q) => $q->where('booking_date', $this->currentDate),
+                fn ($q) => $q->whereBetween('booking_date', [
+                    Carbon::parse($this->currentDate)->startOfWeek(),
+                    Carbon::parse($this->currentDate)->endOfWeek(),
+                ])
             )
             ->orderBy('booking_start')
             ->get();
     }
 
-    public function getWeekDaysProperty()
+    public function weekDays(): Collection
     {
         $start = Carbon::parse($this->currentDate)->startOfWeek();
 
@@ -82,29 +80,15 @@ new class extends Component
             ->map(fn ($i) => $start->copy()->addDays($i));
     }
 
-    public function cancelBooking(): void
+    public function cancel(int $id): void
     {
-        if (! $this->bookingToCancel) {
-            return;
-        }
-
         DB::table('table_bookings')
-            ->where('id', $this->bookingToCancel)
+            ->where('id', $id)
             ->update([
                 'status' => 'cancelled',
                 'cancelled_at' => now(),
             ]);
 
-        $this->bookingToCancel = null;
-
-        $this->dispatch('notify', [
-            'type' => 'success',
-            'message' => 'Booking cancelled successfully.',
-        ]);
-    }
-
-    public function confirmCancel(int $bookingId): void
-    {
-        $this->bookingToCancel = $bookingId;
+        Flux::toast('Booking cancelled successfully.', variant: 'success');
     }
 };
