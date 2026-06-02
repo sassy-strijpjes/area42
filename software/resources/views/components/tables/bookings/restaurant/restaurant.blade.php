@@ -68,6 +68,39 @@
         @include('components.tables.bookings.restaurant.partials.week-view')
     @endif
 
+    <flux:modal wire:model="showNotesModal" class="max-w-lg">
+        <div class="space-y-4">
+            <div>
+                <flux:heading size="lg">
+                    Booking notes
+                </flux:heading>
+
+                @if($selectedBooking)
+                    <div class="mt-2 text-sm text-zinc-500">
+                        {{ $selectedBooking->guest_name }}, Table {{ $selectedBooking->table_id }}
+                    </div>
+                @endif
+            </div>
+
+            <div class="rounded-lg border border-zinc-200 p-4 text-sm text-zinc-700 dark:border-zinc-700 dark:text-zinc-200">
+                @if($selectedBooking?->notes)
+                    {{ $selectedBooking->notes }}
+                @else
+                    No notes added.
+                @endif
+            </div>
+
+            <div class="flex justify-end">
+                <flux:button
+                    variant="ghost"
+                    wire:click="$set('showNotesModal', false)"
+                >
+                    Close
+                </flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
     <flux:modal
         wire:model="bookingToCancel"
         class="max-w-md"

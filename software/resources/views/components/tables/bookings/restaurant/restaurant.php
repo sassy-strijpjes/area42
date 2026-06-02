@@ -11,6 +11,10 @@ new class extends Component
 {
     public string $view = 'day';
 
+    public ?object $selectedBooking = null;
+
+    public bool $showNotesModal = false;
+
     public bool $showCancelled = false;
 
     public string $currentDate;
@@ -78,6 +82,12 @@ new class extends Component
 
         return collect(range(0, 6))
             ->map(fn ($i) => $start->copy()->addDays($i));
+    }
+
+    public function openNotes(int $id): void
+    {
+        $this->selectedBooking = DB::table('table_bookings')->find($id);
+        $this->showNotesModal = true;
     }
 
     public function cancel(int $id): void

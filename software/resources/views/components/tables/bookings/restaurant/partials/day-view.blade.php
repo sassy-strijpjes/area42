@@ -69,6 +69,15 @@
                                         <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-300">
                                             {{ $booking->party_size }} guests
                                         </div>
+
+                                        @if(! empty($booking->notes))
+                                            <button
+                                                wire:click="openNotes({{ $booking->id }})"
+                                                class="mt-1 text-xs text-green-600 hover:underline"
+                                            >
+                                                View notes
+                                            </button>
+                                        @endif
                                     </div>
 
                                     @if(can('edit_restaurant-bookings') || can('cancel_restaurant-bookings'))
