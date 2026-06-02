@@ -1,13 +1,12 @@
 <?php
 
+use App\Livewire\FormComponent;
 use Carbon\Carbon;
 use Flux\Flux;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Validate;
-use Livewire\Component;
 
-new class extends Component {
+new class extends FormComponent {
     public $booking;
 
     public int $bookingId;
@@ -64,18 +63,23 @@ new class extends Component {
     public function update(): void
     {
         $this->validate();
-        $this->validateCapacity();
+        $status = $this->validateBookingRules();
+        $table = $status === 'confirmed'
+            ? $this->findAvailableTable()
+            : null;
 
         DB::table('table_bookings')
             ->where('id', $this->bookingId)
             ->update([
-                'table_id' => $this->table_id,
+                'table_id' => $table?->id,
                 'guest_name' => $this->guest_name,
                 'guest_phone' => $this->guest_phone,
                 'party_size' => $this->party_size,
                 'booking_date' => $this->booking_date,
                 'booking_start' => convert($this->booking_time),
                 'booking_end' => $this->booking_end_time ? convert($this->booking_end_time) : null,
+                'status' => $table ? 'confirmed' : 'waitlist',
+                'waitlisted_at' => $table ? null : now(),
                 'notes' => $this->notes,
                 'updated_at' => now(),
             ]);
@@ -90,24 +94,5 @@ new class extends Component {
         return DB::table('restaurant_tables')
             ->orderBy('name')
             ->get();
-    }
-
-    private function validateCapacity(): void
-    {
-        $table = DB::table('restaurant_tables')
-            ->where('id', $this->table_id)
-            ->first();
-
-        if (! $table) {
-            throw ValidationException::withMessages([
-                'table_id' => 'Selected table does not exist.',
-            ]);
-        }
-
-        if ($this->party_size > $table->capacity) {
-            throw ValidationException::withMessages([
-                'party_size' => "This table only seats {$table->capacity} guests.",
-            ]);
-        }
     }
 };

@@ -92,6 +92,12 @@ new class extends Component
 
     public function cancel(int $id): void
     {
+        $booking = DB::table('table_bookings')->find($id);
+
+        if (! $booking) {
+            return;
+        }
+
         DB::table('table_bookings')
             ->where('id', $id)
             ->update([
@@ -99,6 +105,41 @@ new class extends Component
                 'cancelled_at' => now(),
             ]);
 
+        $this->promoteWaitlist($booking->booking_date);
+
         Flux::toast('Booking cancelled successfully.', variant: 'success');
+    }
+
+    public function promoteWaitlist(string $date): void
+    {
+        $next = DB::table('table_bookings')
+            ->where('status', 'waitlist')
+            ->where('booking_date', $date)
+            ->orderBy('waitlisted_at')
+            ->first();
+
+        if (! $next) return;
+
+        $table = DB::table('restaurant_tables')
+            ->where('capacity', '>=', $next->party_size)
+            ->whereNotExists(function ($q) use ($next) {
+                $q->select(DB::raw(1))
+                    ->from('table_bookings')
+                    ->whereColumn('table_bookings.table_id', 'restaurant_tables.id')
+                    ->where('booking_date', $next->booking_date)
+                    ->where('status', 'confirmed');
+            })
+            ->orderBy('capacity')
+            ->first();
+
+        if (! $table) return;
+
+        DB::table('table_bookings')
+            ->where('id', $next->id)
+            ->update([
+                'table_id' => $table->id,
+                'status' => 'confirmed',
+                'waitlisted_at' => null,
+            ]);
     }
 };

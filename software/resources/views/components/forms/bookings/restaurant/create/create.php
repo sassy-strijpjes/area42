@@ -1,12 +1,11 @@
 <?php
 
+use App\Livewire\FormComponent;
 use Flux\Flux;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Validate;
-use Livewire\Component;
 
-new class extends Component {
+new class extends FormComponent {
     #[Validate('required|exists:restaurant_tables,id')]
     public int $table_id = 0;
 
@@ -39,10 +38,13 @@ new class extends Component {
     public function create(): void
     {
         $this->validate();
-        $this->validateCapacity();
+        $status = $this->validateBookingRules();
+        $table = $status === 'confirmed'
+            ? $this->findAvailableTable()
+            : null;
 
         DB::table('table_bookings')->insert([
-            'table_id' => $this->table_id,
+            'table_id' => $table?->id,
             'guest_name' => $this->guest_name,
             'guest_phone' => $this->guest_phone,
             'booking_date' => $this->booking_date,
@@ -50,7 +52,8 @@ new class extends Component {
             'booking_end' => $this->booking_end_time ? convert($this->booking_end_time) : null,
             'party_size' => $this->party_size,
             'notes' => $this->notes,
-            'status' => 'confirmed',
+            'status' => $table ? 'confirmed' : 'waitlist',
+            'waitlisted_at' => $table ? null : now(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -65,24 +68,5 @@ new class extends Component {
         return DB::table('restaurant_tables')
             ->orderBy('name')
             ->get();
-    }
-
-    private function validateCapacity(): void
-    {
-        $table = DB::table('restaurant_tables')
-            ->where('id', $this->table_id)
-            ->first();
-
-        if (! $table) {
-            throw ValidationException::withMessages([
-                'table_id' => 'Selected table does not exist.',
-            ]);
-        }
-
-        if ($this->party_size > $table->capacity) {
-            throw ValidationException::withMessages([
-                'party_size' => "This table only seats {$table->capacity} guests.",
-            ]);
-        }
     }
 };
