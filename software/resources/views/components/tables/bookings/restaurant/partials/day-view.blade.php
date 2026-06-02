@@ -12,6 +12,13 @@
                     active
                 </flux:badge>
 
+                @if($showWaitlisted)
+                    <flux:badge color="yellow">
+                        {{ $this->bookings->where('status', 'waitlist')->count() }}
+                        waitlisted
+                    </flux:badge>
+                @endif
+
                 @if($showCancelled)
                     <flux:badge color="red">
                         {{ $this->bookings->where('status', 'cancelled')->count() }}
@@ -38,22 +45,16 @@
                                 @class([
                                     'min-w-45 rounded-lg border p-3',
                                     'border-green-200 bg-green-50 dark:border-green-950 dark:bg-green-950/40'
-                                        => $booking->status !== 'cancelled',
+                                        => $booking->status === 'confirmed',
+                                    'border-yellow-200 bg-yellow-50 dark:border-yellow-950 dark:bg-yellow-950/40'
+                                        => $booking->status === 'waitlist',
                                     'border-red-200 bg-red-50 dark:border-red-950 dark:bg-red-950/40'
                                         => $booking->status === 'cancelled',
                                 ])
                             >
                                 <div class="flex items-start justify-between gap-2">
                                     <div class="flex-1">
-                                        <div
-                                            @class([
-                                                'truncate text-sm font-medium',
-                                                'text-zinc-900 dark:text-zinc-100'
-                                                    => $booking->status !== 'cancelled',
-                                                'line-through text-red-700 dark:text-red-300'
-                                                    => $booking->status === 'cancelled',
-                                            ])
-                                        >
+                                        <div class="truncate text-sm font-medium">
                                             {{ $booking->guest_name }}
                                         </div>
 
@@ -61,8 +62,7 @@
                                             {{ Carbon::createFromFormat('H:i:s', $booking->booking_start)->format('H:i') }}
 
                                             @if($booking->booking_end)
-                                                -
-                                                {{ Carbon::parse($booking->booking_end)->format('H:i') }}
+                                                - {{ Carbon::parse($booking->booking_end)->format('H:i') }}
                                             @endif
                                         </div>
 
@@ -73,7 +73,15 @@
                                         @if(! empty($booking->notes))
                                             <button
                                                 wire:click="openNotes({{ $booking->id }})"
-                                                class="mt-1 text-xs text-green-600 hover:underline"
+                                                @class([
+                                                    'mt-1 text-xs hover:underline underline-offset-2 transition',
+                                                    'text-green-700 dark:text-green-400'
+                                                        => $booking->status === 'confirmed',
+                                                    'text-yellow-700 dark:text-yellow-300'
+                                                        => $booking->status === 'waitlist',
+                                                    'text-red-700 dark:text-red-400'
+                                                        => $booking->status === 'cancelled',
+                                                ])
                                             >
                                                 View notes
                                             </button>

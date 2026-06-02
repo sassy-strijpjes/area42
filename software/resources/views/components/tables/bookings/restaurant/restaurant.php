@@ -4,6 +4,7 @@ use Carbon\Carbon;
 use Flux\Flux;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -16,6 +17,8 @@ new class extends Component
     public bool $showNotesModal = false;
 
     public bool $showCancelled = false;
+
+    public bool $showWaitlisted = false;
 
     public string $currentDate;
 
@@ -50,23 +53,19 @@ new class extends Component
     public function bookings()
     {
         return DB::table('table_bookings')
-            ->join(
-                'restaurant_tables',
-                'table_bookings.table_id',
-                '=',
-                'restaurant_tables.id'
-            )
-            ->select(
-                'table_bookings.*',
-                'restaurant_tables.name as table_name'
-            )
+            ->join('restaurant_tables', 'table_bookings.table_id', '=', 'restaurant_tables.id')
+            ->select('table_bookings.*', 'restaurant_tables.name as table_name')
             ->when(
                 ! $this->showCancelled,
                 fn ($q) => $q->where('table_bookings.status', '!=', 'cancelled')
             )
             ->when(
+                ! $this->showWaitlisted,
+                fn ($q) => $q->where('table_bookings.status', '!=', 'waitlist')
+            )
+            ->when(
                 $this->view === 'day',
-                fn ($q) => $q->where('booking_date', $this->currentDate),
+                fn ($q) => $q->whereDate('booking_date', $this->currentDate),
                 fn ($q) => $q->whereBetween('booking_date', [
                     Carbon::parse($this->currentDate)->startOfWeek(),
                     Carbon::parse($this->currentDate)->endOfWeek(),
@@ -94,9 +93,7 @@ new class extends Component
     {
         $booking = DB::table('table_bookings')->find($id);
 
-        if (! $booking) {
-            return;
-        }
+        if (! $booking) return;
 
         DB::table('table_bookings')
             ->where('id', $id)
@@ -127,7 +124,11 @@ new class extends Component
                     ->from('table_bookings')
                     ->whereColumn('table_bookings.table_id', 'restaurant_tables.id')
                     ->where('booking_date', $next->booking_date)
-                    ->where('status', 'confirmed');
+                    ->where('status', 'confirmed')
+                    ->where(function ($q) use ($next) {
+                        $q->where('booking_start', '<', $next->booking_end ?? $next->booking_start)
+                            ->where('booking_end', '>', $next->booking_start);
+                    });
             })
             ->orderBy('capacity')
             ->first();
@@ -141,5 +142,7 @@ new class extends Component
                 'status' => 'confirmed',
                 'waitlisted_at' => null,
             ]);
+
+        Log::info("Waitlist promoted booking {$next->id}");
     }
 };

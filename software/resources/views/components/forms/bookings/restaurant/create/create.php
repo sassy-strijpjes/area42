@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Validate;
 
 new class extends FormComponent {
+
     #[Validate('required|exists:restaurant_tables,id')]
     public int $table_id = 0;
 
@@ -38,13 +39,46 @@ new class extends FormComponent {
     public function create(): void
     {
         $this->validate();
-        $status = $this->validateBookingRules();
-        $table = $status === 'confirmed'
-            ? $this->findAvailableTable()
+
+        $start = convert($this->booking_time);
+        $end = $this->booking_end_time ? convert($this->booking_end_time) : null;
+
+        $hasConflict = DB::table('table_bookings')
+            ->where('table_id', $this->table_id)
+            ->where('booking_date', $this->booking_date)
+            ->where('status', 'confirmed')
+            ->where(function ($q) use ($start, $end) {
+                $q->where(function ($q) use ($start, $end) {
+                    $q->where('booking_start', '<', $end ?? $start)
+                        ->where('booking_end', '>', $start);
+                });
+            })
+            ->exists();
+
+        if ($hasConflict) {
+            Flux::modal('confirm')->show();
+            return;
+        }
+
+        $this->saveBooking('confirmed');
+    }
+
+    public function confirmWaitlist(): void
+    {
+        Flux::modal('confirm')->close();
+        $this->saveBooking('waitlist');
+    }
+
+    private function saveBooking(string $status): void
+    {
+        Flux::modal('confirm')->close();
+
+        $tableId = $status === 'confirmed'
+            ? $this->findAvailableTable()?->id
             : null;
 
         DB::table('table_bookings')->insert([
-            'table_id' => $table?->id,
+            'table_id' => $tableId,
             'guest_name' => $this->guest_name,
             'guest_phone' => $this->guest_phone,
             'booking_date' => $this->booking_date,
@@ -52,13 +86,18 @@ new class extends FormComponent {
             'booking_end' => $this->booking_end_time ? convert($this->booking_end_time) : null,
             'party_size' => $this->party_size,
             'notes' => $this->notes,
-            'status' => $table ? 'confirmed' : 'waitlist',
-            'waitlisted_at' => $table ? null : now(),
+            'status' => $status,
+            'waitlisted_at' => $status === 'waitlist' ? now() : null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        Flux::toast('Booking created', variant: 'success');
+        Flux::toast(
+            $status === 'confirmed'
+                ? 'Booking confirmed'
+                : 'Added to waitlist',
+            variant: $status === 'confirmed' ? 'success' : 'info'
+        );
 
         $this->redirect(route('staff.restaurant.bookings'), navigate: true);
     }

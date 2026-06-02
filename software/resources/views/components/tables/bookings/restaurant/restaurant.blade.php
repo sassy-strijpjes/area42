@@ -52,11 +52,13 @@
                 />
 
                 <flux:menu>
-                    <flux:menu.radio.group wire:model="sortBy">
-                        <flux:menu.item wire:click="$toggle('showCancelled')">
-                            {{ $showCancelled ? 'Hide cancelled bookings' : 'Show cancelled bookings' }}
-                        </flux:menu.item>
-                    </flux:menu.radio.group>
+                    <flux:menu.item icon="{{ $showWaitlisted ? 'check' : '' }}" wire:click="$toggle('showWaitlisted')">
+                        Show waitlisted bookings
+                    </flux:menu.item>
+
+                    <flux:menu.item icon="{{ $showCancelled ? 'check' : '' }}" wire:click="$toggle('showCancelled')">
+                        Show cancelled bookings
+                    </flux:menu.item>
                 </flux:menu>
             </flux:dropdown>
         </div>
