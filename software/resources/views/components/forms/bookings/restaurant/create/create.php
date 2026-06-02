@@ -73,9 +73,7 @@ new class extends FormComponent {
     {
         Flux::modal('confirm')->close();
 
-        $tableId = $status === 'confirmed'
-            ? $this->findAvailableTable()?->id
-            : null;
+        $tableId = $this->findAvailableTable()?->id;
 
         DB::table('table_bookings')->insert([
             'table_id' => $tableId,

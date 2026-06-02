@@ -107,14 +107,10 @@ new class extends FormComponent {
 
     private function save(string $status): void
     {
-        $tableId = $status === 'confirmed'
-            ? $this->findAvailableTable()?->id
-            : null;
-
         DB::table('table_bookings')
             ->where('id', $this->bookingId)
             ->update([
-                'table_id' => $tableId,
+                'table_id' => $this->table_id,
                 'guest_name' => $this->guest_name,
                 'guest_phone' => $this->guest_phone,
                 'party_size' => $this->party_size,
@@ -133,7 +129,7 @@ new class extends FormComponent {
             $status === 'confirmed'
                 ? 'Booking updated'
                 : 'Moved to waitlist',
-            variant: $status === 'confirmed' ? 'success' : 'warning'
+            variant: $status === 'confirmed' ? 'success' : 'info'
         );
 
         $this->redirect(route('staff.restaurant.bookings'), navigate: true);
