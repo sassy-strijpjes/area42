@@ -1,9 +1,12 @@
 <?php
 
+use App\Http\Controllers\AiPredictionController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__ . '/admin.php';
+
+Route::post('ai/predict', [AiPredictionController::class, 'trainAndPredict']);
 
 Route::name('staff.')->middleware(['auth'])->group(function () {
     Route::get('forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot-password');
