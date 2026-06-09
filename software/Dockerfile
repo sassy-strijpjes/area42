@@ -21,12 +21,6 @@ RUN composer install --no-interaction --prefer-dist \
     && npm install --ignore-scripts \
     && npm run build
 
-# Copy env and generate key
-RUN cp .env.example .env \
-    && sed -i 's/DB_HOST=127.0.0.1/DB_HOST=db/' .env \
-    && sed -i 's/DB_PASSWORD=/DB_PASSWORD=secret/' .env \
-    && sed -i 's/SESSION_DRIVER=database/SESSION_DRIVER=file/' .env \
-    && php artisan key:generate
 
 EXPOSE 8000
 
