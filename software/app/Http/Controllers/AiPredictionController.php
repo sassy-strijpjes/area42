@@ -14,8 +14,8 @@ class AiPredictionController extends Controller
         $validated = $request->validate([
             'data' => ['required', 'array', 'min:1'],
             'data.*.occupancy_rate' => ['required', 'numeric'],
-            'data.*.week_start' => ['nullable', 'date_format:Y-m-d', Rule::requiredWithout('data.*.date')],
-            'data.*.date' => ['nullable', 'date_format:Y-m-d', Rule::requiredWithout('data.*.week_start')],
+            'data.*.week_start' => ['nullable', 'date_format:Y-m-d', 'required_without:data.*.date'],
+            'data.*.date' => ['nullable', 'date_format:Y-m-d', 'required_without:data.*.week_start'],
             'days' => ['required', 'integer', 'min:1'],
         ]);
 

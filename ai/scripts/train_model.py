@@ -60,6 +60,77 @@ def smape(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     return float(np.mean(values) * 100)
 
 
+def is_holiday_period(day: pd.Timestamp) -> int:
+    month = int(day.month)
+    iso_week = int(day.isocalendar().week)
+    return int(
+        month in (7, 8)
+        or iso_week in range(17, 20)
+        or iso_week in range(30, 36)
+        or iso_week in range(42, 44)
+        or (month == 12 and day.day >= 20)
+        or (month == 1 and day.day <= 5)
+    )
+
+
+def season_from_month(month: int) -> int:
+    if month in (12, 1, 2):
+        return 0
+    if month in (3, 4, 5):
+        return 1
+    if month in (6, 7, 8):
+        return 2
+    return 3
+
+
+def prepare_weekly_data(weekly: pd.DataFrame) -> pd.DataFrame:
+    weekly = weekly.copy()
+
+    if "week_start" not in weekly.columns:
+        raise ValueError("Input data must contain a 'week_start' column.")
+
+    weekly["week_start"] = pd.to_datetime(weekly["week_start"])
+
+    if "period" not in weekly.columns:
+        iso = weekly["week_start"].dt.isocalendar()
+        year = iso["year"].astype(str)
+        week = iso["week"].astype(str).str.zfill(2)
+        weekly["period"] = year + "-W" + week
+
+    if "iso_week" not in weekly.columns:
+        weekly["iso_week"] = weekly["week_start"].dt.isocalendar()["week"].astype(int)
+
+    if "month" not in weekly.columns:
+        weekly["month"] = weekly["week_start"].dt.month.astype(int)
+
+    if "season" not in weekly.columns:
+        weekly["season"] = weekly["month"].apply(season_from_month).astype(int)
+
+    if "is_holiday_period" not in weekly.columns:
+        weekly["is_holiday_period"] = weekly["week_start"].apply(is_holiday_period).astype(int)
+
+    if "is_weekend" not in weekly.columns:
+        weekly["is_weekend"] = (weekly["week_start"].dt.dayofweek >= 5).astype(int)
+
+    if "previous_occupancy" not in weekly.columns:
+        weekly["previous_occupancy"] = weekly[TARGET_COLUMN].shift(1)
+        weekly["previous_occupancy"] = weekly["previous_occupancy"].fillna(weekly["previous_occupancy"].bfill())
+
+    if "rolling_4_week_occupancy" not in weekly.columns:
+        weekly["rolling_4_week_occupancy"] = weekly[TARGET_COLUMN].rolling(4, min_periods=1).mean()
+
+    if "known_reservations_30d_before" not in weekly.columns:
+        weekly["known_reservations_30d_before"] = 42
+
+    if "known_guest_count_30d_before" not in weekly.columns:
+        weekly["known_guest_count_30d_before"] = weekly["known_reservations_30d_before"] * 3.4
+
+    if "known_average_nights_30d_before" not in weekly.columns:
+        weekly["known_average_nights_30d_before"] = 4.8
+
+    return weekly
+
+
 def metrics(y_true: pd.Series, y_pred: np.ndarray) -> dict[str, float]:
     return {
         "mae": round(float(mean_absolute_error(y_true, y_pred)), 4),
@@ -133,6 +204,7 @@ def feature_importance(model: object) -> list[dict[str, float]]:
 def main() -> None:
     args = parse_args()
     weekly = pd.read_csv(args.input, parse_dates=["week_start"])
+    weekly = prepare_weekly_data(weekly)
     train, test = chronological_split(weekly)
 
     Path(args.train_output).parent.mkdir(parents=True, exist_ok=True)
