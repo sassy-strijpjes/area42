@@ -1,0 +1,40 @@
+# This docker compose is setup for a single EC2 instance. The PostgreSQL is installed via EC2 itself.
+#
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# WARNING: THIS CONFIGURATION IS EXPERIMENTAL
+#
+# This Docker Compose setup is experimental and potentially unstable.
+# There is no guarantee that it works correctly or produces a functional deployment.
+# Use at your own risk.
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - app-public:/var/www/app/public
+    networks:
+      - internal
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - app-public:/var/www/app/public:ro
+    depends_on:
+      - app
+    networks:
+      - internal
+
+volumes:
+  app-public:
+
+networks:
+  internal:
+    driver: bridge
