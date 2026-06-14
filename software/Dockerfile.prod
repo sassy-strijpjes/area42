@@ -78,6 +78,3 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 EXPOSE 9000
 
 CMD ["php-fpm"]
-
-# Default command keeps the container running
-# CMD ["sh", "-c", "echo 'Container started'; tail -f /dev/null"]
