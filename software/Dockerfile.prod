@@ -1,24 +1,24 @@
-FROM composer:2 AS php-vendor
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# WARNING: THIS BUILD IS EXPERIMENTAL
+#
+# This Docker build configuration is experimental and potentially unstable.
+# There is no guarantee that it works correctly or produces a functional image.
+# Use at your own risk.
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-WORKDIR /app
-
-COPY composer.json composer.lock ./
-
-RUN composer install --no-dev --no-interaction --prefer-dist --ignore-platform-reqs --no-scripts
-
-
+# ---------------------
+# Frontend build stage
+# ---------------------
 FROM node:22 AS frontend
 
 WORKDIR /app
 
+# Copy for npm
 COPY package.json package-lock.json* ./
-
-RUN npm install --ignore-scripts
+RUN npm install --ignore-scripts 
 
 COPY . .
 
-# bring in composer vendor from the php-vendor stage so imports like ../../vendor/... resolve
-COPY --from=php-vendor /app/vendor ./vendor
 RUN npm run build
 
 # ---------------------
@@ -46,38 +46,22 @@ RUN docker-php-ext-install \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY composer.json composer.lock ./
-
 RUN composer install \
     --no-dev \
+    --optimize-autoloader \
     --no-interaction \
-    --prefer-dist \
-    --no-scripts \
-    --no-autoloader \
-    --no-progress
+    --prefer-dist
 
 COPY . .
 
-RUN mkdir -p bootstrap/cache storage/framework/sessions \
-     storage/framework/views \
-     storage/framework/cache \
-    && chown -R www-data:www-data bootstrap/cache storage \
-    && chmod -R 775 bootstrap/cache storage
-
 COPY --from=frontend /app/public/build ./public/build
 
-# do not run scripts automatically
-RUN composer dump-autoload --optimize --no-scripts
-# now run package discovery explicitly so failures are easier to inspect
-RUN php artisan package:discover --ansi
-RUN php artisan config:cache
-RUN php artisan route:cache
-RUN php artisan view:cache
+RUN php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
 
 RUN chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 9000
 
 CMD ["php-fpm"]
-
-# Default command keeps the container running
-# CMD ["sh", "-c", "echo 'Container started'; tail -f /dev/null"]
