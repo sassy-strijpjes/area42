@@ -1,37 +1,84 @@
-FROM php:8.4-cli
+FROM composer:2 AS php-vendor
+
+WORKDIR /app
+
+COPY composer.json composer.lock ./
+
+RUN composer install --no-dev --no-interaction --prefer-dist --ignore-platform-reqs --no-scripts
+
+
+FROM node:22 AS frontend
+
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+
+RUN npm install --ignore-scripts
+
+COPY . .
+
+# bring in composer vendor from the php-vendor stage so imports like ../../vendor/... resolve
+COPY --from=php-vendor /app/vendor ./vendor
+RUN npm run build
+
+# ---------------------
+# PHP build stage
+# ---------------------
+FROM php:8.4-fpm
 
 WORKDIR /var/www/app
 
-# System dependencies
 RUN apt-get update && apt-get install -y \
-    git curl libpq-dev libonig-dev libxml2-dev zip unzip nodejs npm \
+    git \
+    unzip \
+    libpq-dev \
+    libonig-dev \
+    libxml2-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# PHP extensions
-RUN docker-php-ext-install pdo pdo_pgsql mbstring xml bcmath
+RUN docker-php-ext-install \
+    pdo \
+    pdo_pgsql \
+    mbstring \
+    xml \
+    bcmath
 
-# Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copy source
+COPY composer.json composer.lock ./
+
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --prefer-dist \
+    --no-scripts \
+    --no-autoloader \
+    --no-progress
+
 COPY . .
 
-# Install PHP + JS deps and build frontend assets
-RUN composer install --no-interaction --prefer-dist \
-    && npm install --ignore-scripts \
-    && npm run build
+RUN mkdir -p bootstrap/cache storage/framework/sessions \
+     storage/framework/views \
+     storage/framework/cache \
+    && chown -R www-data:www-data bootstrap/cache storage \
+    && chmod -R 775 bootstrap/cache storage
 
-# Copy env and generate key
-RUN cp .env.example .env \
-    && sed -i 's/DB_HOST=127.0.0.1/DB_HOST=db/' .env \
-    && sed -i 's/DB_PASSWORD=/DB_PASSWORD=secret/' .env \
-    && sed -i 's/SESSION_DRIVER=database/SESSION_DRIVER=file/' .env \
-    && php artisan key:generate
+COPY --from=frontend /app/public/build ./public/build
 
-EXPOSE 8000
+# do not run scripts automatically
+RUN composer dump-autoload --optimize --no-scripts
+# now run package discovery explicitly so failures are easier to inspect
+RUN php artisan package:discover --ansi
+RUN php artisan config:cache
+RUN php artisan route:cache
+RUN php artisan view:cache
+RUN php artisan key:generate
+
+RUN chown -R www-data:www-data storage bootstrap/cache
+
+EXPOSE 9000
 
 CMD composer dump-autoload \
     && php artisan migrate --force \
     && php artisan optimize:clear \
-    && php artisan db:seed --class="Database\Seeders\DatabaseSeeder" --force \
     && php artisan serve --host=0.0.0.0 --port=8000
