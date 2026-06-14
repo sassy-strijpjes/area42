@@ -33,6 +33,5 @@ jobs:
           IMAGE_TAG:
             ${{ github.ref_type == 'tag' && github.ref_name || github.sha }}
         run: |
-          echo $REGISTRY/$REPOSITORY:$IMAGE_TAG 
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
