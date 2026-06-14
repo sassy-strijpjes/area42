@@ -12,16 +12,20 @@ services:
             - pgdata:/var/lib/postgresql/data
 
     app:
-        build: .
+        build:
+            dockerfile: Dockerfile
+            context: .
+        env_file:
+            - .env
         restart: "no"
         ports:
             - "8000:8000"
-        environment:
-            DB_HOST: db
-            DB_PORT: 5432
-            DB_DATABASE: area42_software
-            DB_USERNAME: postgres
-            DB_PASSWORD: secret
+        # environment:
+        #     DB_HOST: db
+        #     DB_PORT: 5432
+        #     DB_DATABASE: area42_software
+        #     DB_USERNAME: postgres
+        #     DB_PASSWORD: secret
         depends_on:
             - db
 
