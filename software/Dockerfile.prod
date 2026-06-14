@@ -13,10 +13,12 @@ FROM node:22 AS frontend
 
 WORKDIR /app
 
-COPY composer.json composer.lock ./
-RUN composer install --no-interaction --prefer-dist --no-scripts
+# Copy for npm
+COPY package.json package-lock.json* ./
+RUN npm install --ignore-scripts 
 
 COPY . .
+
 RUN npm run build
 
 # ---------------------
@@ -44,7 +46,6 @@ RUN docker-php-ext-install \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY composer.json composer.lock ./
-
 RUN composer install \
     --no-dev \
     --optimize-autoloader \
