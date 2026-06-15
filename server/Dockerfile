@@ -1,3 +1,7 @@
+# ---------------------
+# get vendors stage
+# ---------------------
+
 FROM composer:2 AS php-vendor
 
 WORKDIR /app
@@ -6,6 +10,9 @@ COPY composer.json composer.lock ./
 
 RUN composer install --no-dev --no-interaction --prefer-dist --ignore-platform-reqs --no-scripts
 
+# ---------------------
+# NPM build stage
+# ---------------------
 
 FROM node:22 AS frontend
 
@@ -67,6 +74,7 @@ COPY --from=frontend /app/public/build ./public/build
 
 # do not run scripts automatically
 RUN composer dump-autoload --optimize --no-scripts
+
 # now run package discovery explicitly so failures are easier to inspect
 RUN php artisan package:discover --ansi
 RUN php artisan config:cache
