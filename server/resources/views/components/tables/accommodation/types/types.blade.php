@@ -32,6 +32,12 @@
 
     <flux:table.rows>
         @forelse ($this->types as $type)
+            @php
+                $amenities = json_decode($type->amenities ?? '[]');
+                $visible   = array_slice($amenities, 0, 3);
+                $overflow  = count($amenities) - 3;
+            @endphp
+
             <flux:table.row :key="$type->id">
 
                 <flux:table.cell class="font-medium">
@@ -39,7 +45,7 @@
                 </flux:table.cell>
 
                 <flux:table.cell class="text-zinc-500 dark:text-zinc-400">
-                    {{ $type->description ?? 'No description' }}
+                    {{ $type->description ?? '—' }}
                 </flux:table.cell>
 
                 <flux:table.cell>
@@ -47,12 +53,14 @@
                 </flux:table.cell>
 
                 <flux:table.cell>
-                    @php $amenities = json_decode($type->amenities ?? '[]') @endphp
                     @if(count($amenities))
-                        <div class="flex flex-wrap gap-1">
-                            @foreach($amenities as $amenity)
+                        <div class="flex flex-wrap items-center gap-1">
+                            @foreach($visible as $amenity)
                                 <flux:badge size="sm" variant="outline">{{ $amenity }}</flux:badge>
                             @endforeach
+                            @if($overflow > 0)
+                                <span class="text-xs text-zinc-400 dark:text-zinc-500">+{{ $overflow }} more</span>
+                            @endif
                         </div>
                     @else
                         <span class="text-zinc-400">—</span>
