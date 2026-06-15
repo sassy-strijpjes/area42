@@ -71,7 +71,7 @@
                                 <flux:navmenu.item href="{{ route('staff.accommodation.types') }}">Types</flux:navmenu.item>
                             @endcan
                             @can('view_accommodation-units')
-                                <flux:navmenu.item href="#">Units</flux:navmenu.item>
+                                <flux:navmenu.item href="{{ route('staff.accommodation.units') }}">Units</flux:navmenu.item>
                             @endcan
                         </flux:navmenu>
                     </flux:dropdown>

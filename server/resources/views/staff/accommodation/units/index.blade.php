@@ -4,13 +4,13 @@
 >
     <x-slot:headerActions>
         <livewire:forms.search
-            placeholder="Search for a staff member..."
+            placeholder="Search for an accommodation unit..."
             event="accommodation-unit-search"
             size="sm"
         />
 
         @can('add_staff')
-            <flux:button :href="route('staff.staff.create')" icon:trailing="plus" size="sm">
+            <flux:button :href="route('staff.accommodation.units.create')" icon:trailing="plus" size="sm">
                 Add
             </flux:button>
         @endcan
