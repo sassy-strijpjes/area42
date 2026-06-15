@@ -45,7 +45,7 @@
                 </flux:table.cell>
 
                 <flux:table.cell class="text-zinc-500 dark:text-zinc-400">
-                    {{ $type->description ?? '—' }}
+                    {{ $type->description ?? 'No description' }}
                 </flux:table.cell>
 
                 <flux:table.cell>
@@ -63,7 +63,7 @@
                             @endif
                         </div>
                     @else
-                        <span class="text-zinc-400">—</span>
+                        <span class="text-zinc-400">No amenities</span>
                     @endif
                 </flux:table.cell>
 
