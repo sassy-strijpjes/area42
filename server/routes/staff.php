@@ -10,7 +10,7 @@ Route::name('staff.')->middleware(['auth'])->group(function () {
     Route::get('reset-password/{token}', [AuthController::class, 'resetPassword'])->name('reset-password');
 });
 
-Route::name('staff.')->middleware(['auth'])->group(function () {
+Route::name('staff.')->prefix('staff')->middleware(['auth'])->group(function () {
     Route::view('/', 'staff.dashboard')->name('dashboard');
     Route::view('roles', 'staff.roles.index')->middleware('permission:view_roles')->name('roles');
     Route::view('roles/create', 'staff.roles.create')->middleware('permission:add_roles')->name('roles.create');
