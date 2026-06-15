@@ -9,7 +9,7 @@
             size="sm"
         />
 
-        @can('add_staff')
+        @can('add_accommodation-units')
             <flux:button :href="route('staff.accommodation.units.create')" icon:trailing="plus" size="sm">
                 Add
             </flux:button>

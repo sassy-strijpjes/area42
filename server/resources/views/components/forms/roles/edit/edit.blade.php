@@ -13,12 +13,12 @@
                 Permissions
             </label>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 @forelse($this->groupedPermissions as $group => $permissions)
                     <div class="border border-stone-200 dark:border-stone-700 rounded-lg p-3">
 
                         <div class="text-xs font-semibold text-stone-500 mb-2 uppercase">
-                            {{ $group }}
+                            {{ str_replace('-', ' ', $group) }}
                         </div>
 
                         <div class="flex flex-col gap-2">

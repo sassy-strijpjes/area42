@@ -27,6 +27,9 @@ Route::name('staff.')->prefix('staff')->middleware(['auth'])->group(function () 
     Route::view('accommodation/units', 'staff.accommodation.units.index')->middleware('permission:view_accommodation-units')->name('accommodation.units');
     Route::view('accommodation/units/create', 'staff.accommodation.units.create')->middleware('permission:add_accommodation-units')->name('accommodation.units.create');
     Route::view('accommodation/units/{unit}/edit', 'staff.accommodation.units.edit')->middleware('permission:edit_accommodation-units')->name('accommodation.units.edit');
+    Route::view('accommodation/pricing', 'staff.accommodation.pricing.index')->middleware('permission:view_accommodation-pricing-rules')->name('accommodation.pricing');
+    Route::view('accommodation/pricing/create', 'staff.accommodation.pricing.create')->middleware('permission:add_accommodation-pricing-rules')->name('accommodation.pricing.create');
+    Route::view('accommodation/pricing/{rule}/edit', 'staff.accommodation.pricing.edit')->middleware('permission:edit_accommodation-pricing-rules')->name('accommodation.pricing.edit');
     Route::get('login', [AuthController::class, 'type'])->name('login');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });
