@@ -31,7 +31,7 @@
                                     />
 
                                     <flux:label>
-                                        {{ ucfirst(str_replace('_', ' ', $permission->name)) }}
+                                        {{ ucfirst(str_replace(['_', '-'], ' ', $permission->name)) }}
                                     </flux:label>
                                 </flux:field>
                             @endforeach

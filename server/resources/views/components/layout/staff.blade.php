@@ -55,6 +55,27 @@
                         </flux:navmenu>
                     </flux:dropdown>
                 @endcan
+
+                @if(can('view_accomodation-types') || can('view_accomodation-units'))
+                    <flux:dropdown>
+                        <flux:navbar.item
+                                icon="home-modern"
+                                icon:trailing="chevron-down"
+                                :current="request()->routeIs('staff.accomodations*')"
+                                wire:navigate
+                        >
+                            Accomodations
+                        </flux:navbar.item>
+                        <flux:navmenu>
+                            @can('view_accomodation-types')
+                                <flux:navmenu.item href="#">Types</flux:navmenu.item>
+                            @endcan
+                            @can('view_accomodation-units')
+                                <flux:navmenu.item href="#">Units</flux:navmenu.item>
+                            @endcan
+                        </flux:navmenu>
+                    </flux:dropdown>
+                @endif
             </flux:navbar>
 
             <flux:spacer />
