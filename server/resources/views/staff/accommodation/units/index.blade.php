@@ -5,7 +5,7 @@
     <x-slot:headerActions>
         <livewire:forms.search
             placeholder="Search for a staff member..."
-            event="staff-search"
+            event="accommodation-unit-search"
             size="sm"
         />
 
@@ -16,5 +16,5 @@
         @endcan
     </x-slot:headerActions>
 
-    <livewire:tables.staff />
+    <livewire:tables.accommodation.units />
 </x-layout.staff>

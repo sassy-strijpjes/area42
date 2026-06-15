@@ -2,5 +2,5 @@
     pageTitle="Edit accommodation type"
     :user="user()"
 >
-    <livewire:forms.staff.edit :staff="$staff" />
+    <livewire:forms.accommodation.types.edit :type="$type" />
 </x-layout.staff>

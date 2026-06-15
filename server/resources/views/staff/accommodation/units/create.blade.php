@@ -2,5 +2,5 @@
     pageTitle="Add an accommodation unit"
     :user="user()"
 >
-    <livewire:forms.staff.create />
+    <livewire:forms.accommodation.units.create />
 </x-layout.staff>
