@@ -14,7 +14,7 @@
 
         <div class="mx-auto max-w-5xl px-6 py-14">
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
-                <a href="#"
+                <a href="{{ route('book.restaurant') }}"
                    class="group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-xl">
                     <flux:card class="h-full flex flex-col gap-5 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors duration-200">
                         <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400">
