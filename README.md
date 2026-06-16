@@ -51,29 +51,117 @@ The AI endpoint will be available at:
 
 ### Using the AI endpoint
 
-The route expects a `POST` request with JSON in this shape:
+**Endpoint:** `POST http://127.0.0.1:8000/ai/predict`
+
+#### Request shape
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `data` | array | yes | Array of historical occupancy records (min 1) |
+| `data[].week_start` | string (YYYY-MM-DD) | yes* | Start date of the week |
+| `data[].date` | string (YYYY-MM-DD) | yes* | Date (alternative to `week_start`; daily granularity) |
+| `data[].occupancy_rate` | number | yes | Occupancy percentage (0–100) |
+| `days` | integer | yes | Number of days to predict ahead |
+
+> *Either `week_start` or `date` is required per record. Use `week_start` for weekly data.
+
+#### Response shape
 
 ```json
 {
+  "predictions": [
+    { "date": "2026-06-23", "percentage_point": 74.52 },
+    { "date": "2026-06-30", "percentage_point": 76.18 },
+    { "date": "2026-07-07", "percentage_point": 82.95 }
+  ]
+}
+```
+
+#### Example 1 — Weekly history, predict 28 days
+
+**Request:**
+```json
+{
   "data": [
-    { "week_start": "2025-01-06", "occupancy_rate": 42.5 },
-    { "week_start": "2025-01-13", "occupancy_rate": 48.7 }
+    { "week_start": "2026-05-12", "occupancy_rate": 42.5 },
+    { "week_start": "2026-05-19", "occupancy_rate": 48.7 },
+    { "week_start": "2026-05-26", "occupancy_rate": 55.0 },
+    { "week_start": "2026-06-02", "occupancy_rate": 60.2 },
+    { "week_start": "2026-06-09", "occupancy_rate": 68.3 }
+  ],
+  "days": 28
+}
+```
+
+**Response (4 weekly predictions, ~7 days apart):**
+```json
+{
+  "predictions": [
+    { "date": "2026-06-23", "percentage_point": 72.50 },
+    { "date": "2026-06-30", "percentage_point": 70.11 },
+    { "date": "2026-07-07", "percentage_point": 82.95 },
+    { "date": "2026-07-14", "percentage_point": 84.30 }
+  ]
+}
+```
+
+#### Example 2 — Short weekly history, predict 14 days
+
+**Request:**
+```json
+{
+  "data": [
+    { "week_start": "2026-06-02", "occupancy_rate": 34.1 },
+    { "week_start": "2026-06-09", "occupancy_rate": 40.6 }
   ],
   "days": 14
 }
 ```
 
-Example with `curl` (requires CSRF token support because the route is defined in `web.php`):
+**Response (2 weekly predictions):**
+```json
+{
+  "predictions": [
+    { "date": "2026-06-23", "percentage_point": 45.20 },
+    { "date": "2026-06-30", "percentage_point": 51.75 }
+  ]
+}
+```
+
+#### Example 3 — Using `date` keys (daily style), predict 7 days
+
+**Request:**
+```json
+{
+  "data": [
+    { "date": "2026-06-09", "occupancy_rate": 43.2 },
+    { "date": "2026-06-10", "occupancy_rate": 45.1 },
+    { "date": "2026-06-11", "occupancy_rate": 44.8 },
+    { "date": "2026-06-12", "occupancy_rate": 42.0 },
+    { "date": "2026-06-13", "occupancy_rate": 47.5 }
+  ],
+  "days": 7
+}
+```
+
+**Response (1 weekly prediction for 7 days):**
+```json
+{
+  "predictions": [
+    { "date": "2026-06-23", "percentage_point": 49.30 }
+  ]
+}
+```
+
+### Using curl (PowerShell, with CSRF)
 
 ```powershell
 curl.exe -i -c csrf_cookies.txt http://127.0.0.1:8000/
 $token = [uri]::UnescapeDataString((Get-Content csrf_cookies.txt | Where-Object { $_ -match 'XSRF-TOKEN' } | ForEach-Object { ($_ -split '\t')[6] }))
-$body = '{"data":[{"week_start":"2025-01-06","occupancy_rate":42.5},{"week_start":"2025-01-13","occupancy_rate":48.7}],"days":14}'
+$body = '{"data":[{"week_start":"2026-05-12","occupancy_rate":42.5},{"week_start":"2026-05-19","occupancy_rate":48.7},{"week_start":"2026-05-26","occupancy_rate":55.0},{"week_start":"2026-06-02","occupancy_rate":60.2},{"week_start":"2026-06-09","occupancy_rate":68.3}],"days":28}'
 Set-Content -Path ai_payload.json -Value $body
 curl.exe -X POST http://127.0.0.1:8000/ai/predict -H "Accept: application/json" -H "Content-Type: application/json" -H "X-XSRF-TOKEN: $token" --cookie csrf_cookies.txt --data-binary '@ai_payload.json'
 ```
-
-The endpoint returns JSON with `predictions` containing `date` and `percentage_point` values.
 
 ### Direct Python workflow
 
