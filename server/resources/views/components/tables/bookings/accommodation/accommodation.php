@@ -1,7 +1,9 @@
 <?php
 
+use App\Mail\Booking\AccommodationCancelled;
 use Flux\Flux;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -85,6 +87,23 @@ new class extends Component
         DB::table('accommodation_units')
             ->where('id', $booking->unit_id)
             ->update(['status' => 'available', 'updated_at' => now()]);
+
+        if ($booking->guest_email) {
+            $unit = DB::table('accommodation_units')
+                ->join('accommodation_types', 'accommodation_units.accommodation_type_id', '=', 'accommodation_types.id')
+                ->select('accommodation_units.name as unit_name', 'accommodation_types.name as type_name')
+                ->where('accommodation_units.id', $booking->unit_id)
+                ->first();
+
+            Mail::to($booking->guest_email)
+                ->send(new AccommodationCancelled(
+                    guestName: $booking->guest_name,
+                    unitName:  $unit->unit_name,
+                    typeName:  $unit->type_name,
+                    checkIn:   $booking->check_in,
+                    checkOut:  $booking->check_out,
+                ));
+        }
 
         Flux::toast('Booking cancelled.', variant: 'warning');
         Flux::modal('cancel-booking-' . $id)->close();

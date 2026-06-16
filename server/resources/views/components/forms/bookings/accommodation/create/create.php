@@ -1,9 +1,11 @@
 <?php
 
 use App\Livewire\FormComponent;
+use App\Mail\Booking\AccommodationConfirmed;
 use Carbon\Carbon;
 use Flux\Flux;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
 
@@ -249,6 +251,27 @@ new class extends FormComponent {
         DB::table('accommodation_units')
             ->where('id', $unitId)
             ->update(['status' => 'occupied', 'updated_at' => now()]);
+
+        if ($this->guest_email) {
+            $unit = DB::table('accommodation_units')
+                ->join('accommodation_types', 'accommodation_units.accommodation_type_id', '=', 'accommodation_types.id')
+                ->select('accommodation_units.name as unit_name', 'accommodation_types.name as type_name')
+                ->where('accommodation_units.id', $unitId)
+                ->first();
+
+            Mail::to($this->guest_email)
+                ->send(new AccommodationConfirmed(
+                    guestName:       $this->guest_name,
+                    unitName:        $unit->unit_name,
+                    typeName:        $unit->type_name,
+                    checkIn:         $this->check_in,
+                    checkOut:        $this->check_out,
+                    guests:          $this->guests,
+                    totalPrice:      $breakdown['total'],
+                    paymentStatus:   $this->payment_status,
+                    specialRequests: $this->special_requests ?: null,
+                ));
+        }
 
         Flux::toast('Accommodation booking created.', variant: 'success');
 
