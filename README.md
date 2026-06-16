@@ -4,7 +4,9 @@ Groepsproject "Area42-1" van semester 2.
 
 ## AI feature
 
-This project includes an AI occupancy prediction pipeline under `ai/` and a Laravel route in `software/` that trains the model and returns future predictions.
+This project includes an AI occupancy prediction pipeline under `ai/` and a
+Laravel route in `software/` that trains the model and returns future
+predictions.
 
 ### Required setup
 
@@ -23,10 +25,13 @@ This project includes an AI occupancy prediction pipeline under `ai/` and a Lara
    php artisan key:generate
    ```
 4. Configure the AI Python interpreter in `software/.env`:
+
    ```text
    AI_PYTHON_BINARY=C:\GithubProjects\area42\.venv\Scripts\python.exe
    ```
-   If you use a different Python installation, set `AI_PYTHON_BINARY` to that interpreter.
+
+   If you use a different Python installation, set `AI_PYTHON_BINARY` to that
+   interpreter.
 
 5. Prepare the Python environment and install AI dependencies:
    ```powershell
@@ -55,15 +60,16 @@ The AI endpoint will be available at:
 
 #### Request shape
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `data` | array | yes | Array of historical occupancy records (min 1) |
-| `data[].week_start` | string (YYYY-MM-DD) | yes* | Start date of the week |
-| `data[].date` | string (YYYY-MM-DD) | yes* | Date (alternative to `week_start`; daily granularity) |
-| `data[].occupancy_rate` | number | yes | Occupancy percentage (0–100) |
-| `days` | integer | yes | Number of days to predict ahead |
+| Field                   | Type                | Required | Description                                           |
+| ----------------------- | ------------------- | -------- | ----------------------------------------------------- |
+| `data`                  | array               | yes      | Array of historical occupancy records (min 1)         |
+| `data[].week_start`     | string (YYYY-MM-DD) | yes\*    | Start date of the week                                |
+| `data[].date`           | string (YYYY-MM-DD) | yes\*    | Date (alternative to `week_start`; daily granularity) |
+| `data[].occupancy_rate` | number              | yes      | Occupancy percentage (0–100)                          |
+| `days`                  | integer             | yes      | Number of days to predict ahead                       |
 
-> *Either `week_start` or `date` is required per record. Use `week_start` for weekly data.
+> \*Either `week_start` or `date` is required per record. Use `week_start` for
+> weekly data.
 
 #### Response shape
 
@@ -80,6 +86,7 @@ The AI endpoint will be available at:
 #### Example 1 — Weekly history, predict 28 days
 
 **Request:**
+
 ```json
 {
   "data": [
@@ -94,13 +101,14 @@ The AI endpoint will be available at:
 ```
 
 **Response (4 weekly predictions, ~7 days apart):**
+
 ```json
 {
   "predictions": [
-    { "date": "2026-06-23", "percentage_point": 72.50 },
+    { "date": "2026-06-23", "percentage_point": 72.5 },
     { "date": "2026-06-30", "percentage_point": 70.11 },
     { "date": "2026-07-07", "percentage_point": 82.95 },
-    { "date": "2026-07-14", "percentage_point": 84.30 }
+    { "date": "2026-07-14", "percentage_point": 84.3 }
   ]
 }
 ```
@@ -108,6 +116,7 @@ The AI endpoint will be available at:
 #### Example 2 — Short weekly history, predict 14 days
 
 **Request:**
+
 ```json
 {
   "data": [
@@ -119,10 +128,11 @@ The AI endpoint will be available at:
 ```
 
 **Response (2 weekly predictions):**
+
 ```json
 {
   "predictions": [
-    { "date": "2026-06-23", "percentage_point": 45.20 },
+    { "date": "2026-06-23", "percentage_point": 45.2 },
     { "date": "2026-06-30", "percentage_point": 51.75 }
   ]
 }
@@ -131,6 +141,7 @@ The AI endpoint will be available at:
 #### Example 3 — Using `date` keys (daily style), predict 7 days
 
 **Request:**
+
 ```json
 {
   "data": [
@@ -145,11 +156,10 @@ The AI endpoint will be available at:
 ```
 
 **Response (1 weekly prediction for 7 days):**
+
 ```json
 {
-  "predictions": [
-    { "date": "2026-06-23", "percentage_point": 49.30 }
-  ]
+  "predictions": [{ "date": "2026-06-23", "percentage_point": 49.3 }]
 }
 ```
 
@@ -183,15 +193,18 @@ python scripts\predict_occupancy.py --granularity weekly --periods 52
 python scripts\predict_occupancy.py --granularity daily --periods 90
 ```
 
-Daily predictions include a **day-over-day comparison** column showing whether a given day is more or less occupied than the previous day (e.g. "↑ lichte stijging", "→ stabiel"). This lets you quickly see if tomorrow will be busier than today.
+Daily predictions include a **day-over-day comparison** column showing whether a
+given day is more or less occupied than the previous day (e.g. "↑ lichte
+stijging", "→ stabiel"). This lets you quickly see if tomorrow will be busier
+than today.
 
 ### Output files
 
 All output lands under `ai/` relative to the script location:
 
-| Granularity | Trained model | Future predictions |
-|---|---|---|
-| Weekly | `ai/Models/occupancy_regressor.pkl` | `ai/Reports/future_predictions.csv` |
-| Daily | `ai/Models/occupancy_regressor_daily.pkl` | `ai/Reports/future_predictions_daily.csv` |
+| Granularity | Trained model                             | Future predictions                        |
+| ----------- | ----------------------------------------- | ----------------------------------------- |
+| Weekly      | `ai/Models/occupancy_regressor.pkl`       | `ai/Reports/future_predictions.csv`       |
+| Daily       | `ai/Models/occupancy_regressor_daily.pkl` | `ai/Reports/future_predictions_daily.csv` |
 
 Metrics and test-set predictions are also written to `ai/Reports/`.
