@@ -1,3 +1,5 @@
+@use('Carbon\Carbon')
+
 <div>
     @if ($confirmed)
         <div class="min-h-screen bg-white dark:bg-zinc-900 flex items-center justify-center px-6">
@@ -16,7 +18,7 @@
                 <flux:card class="text-left space-y-3">
                     <div class="flex justify-between text-sm">
                         <flux:text class="text-zinc-600 dark:text-zinc-500">Date</flux:text>
-                        <flux:text class="font-medium">{{ \Carbon\Carbon::parse($confirmedDate)->format('D, d M Y') }}</flux:text>
+                        <flux:text class="font-medium">{{ Carbon::parse($confirmedDate)->format('D, d M Y') }}</flux:text>
                     </div>
                     <flux:separator />
                     <div class="flex justify-between text-sm">
@@ -158,7 +160,7 @@
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
                                 <flux:text class="text-zinc-400">Date</flux:text>
-                                <flux:text class="font-medium">{{ \Carbon\Carbon::parse($booking_date)->format('D, d M Y') }}</flux:text>
+                                <flux:text class="font-medium">{{ Carbon::parse($booking_date)->format('D, d M Y') }}</flux:text>
                             </div>
                             <div class="flex justify-between">
                                 <flux:text class="text-zinc-400">Time</flux:text>

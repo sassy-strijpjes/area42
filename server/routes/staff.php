@@ -21,6 +21,9 @@ Route::name('staff.')->prefix('staff')->middleware(['auth'])->group(function () 
     Route::view('bookings/restaurant', 'staff.bookings.restaurant.index')->middleware('permission:view_restaurant-bookings')->name('restaurant.bookings');
     Route::view('bookings/restaurant/create', 'staff.bookings.restaurant.create')->middleware('permission:add_restaurant-bookings')->name('restaurant.bookings.create');
     Route::view('bookings/restaurant/{booking}/edit', 'staff.bookings.restaurant.edit')->middleware('permission:edit_restaurant-bookings')->name('restaurant.bookings.edit');
+    Route::view('bookings/accommodation', 'staff.bookings.accommodation.index')->middleware('permission:view_accommodation-bookings')->name('accommodation.bookings');
+    Route::view('bookings/accommodation/create', 'staff.bookings.accommodation.create')->middleware('permission:add_accommodation-bookings')->name('accommodation.bookings.create');
+    Route::view('bookings/accommodation/{booking}/edit', 'staff.bookings.accommodation.edit')->middleware('permission:edit_accommodation-bookings')->name('accommodation.bookings.edit');
     Route::view('accommodation/types', 'staff.accommodation.types.index')->middleware('permission:view_accommodation-types')->name('accommodation.types');
     Route::view('accommodation/types/create', 'staff.accommodation.types.create')->middleware('permission:add_accommodation-types')->name('accommodation.types.create');
     Route::view('accommodation/types/{type}/edit', 'staff.accommodation.types.edit')->middleware('permission:edit_accommodation-types')->name('accommodation.types.edit');

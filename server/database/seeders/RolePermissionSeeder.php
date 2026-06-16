@@ -26,6 +26,14 @@ class RolePermissionSeeder extends Seeder
         'add_roles',
         'edit_roles',
         'delete_roles',
+        'view_restaurant-bookings',
+        'add_restaurant-bookings',
+        'edit_restaurant-bookings',
+        'cancel_restaurant-bookings',
+        'view_accommodation-bookings',
+        'add_accommodation-bookings',
+        'edit_accommodation-bookings',
+        'delete_accommodation-bookings',
         'view_accommodation-types',
         'add_accommodation-types',
         'edit_accommodation-types',
@@ -38,10 +46,6 @@ class RolePermissionSeeder extends Seeder
         'add_accommodation-pricing-rules',
         'edit_accommodation-pricing-rules',
         'delete_accommodation-pricing-rules',
-        'view_restaurant-bookings',
-        'add_restaurant-bookings',
-        'edit_restaurant-bookings',
-        'cancel_restaurant-bookings',
     ];
 
     public array $rolePermissions = [

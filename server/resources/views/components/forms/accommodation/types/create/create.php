@@ -16,7 +16,6 @@ new class extends FormComponent {
     #[Validate('required|integer|min:1')]
     public int $max_guests = 1;
 
-    // Managed as a comma-separated string in the UI, stored as JSON
     #[Validate('nullable|string')]
     public string $amenities = '';
 

@@ -20,6 +20,7 @@ new class extends Component
     {
         $this->search = $value;
         $this->resetPage();
+        unset($this->units);
     }
 
     #[On('item-deleted')]
@@ -64,10 +65,11 @@ new class extends Component
             ->join('accommodation_types', 'accommodation_units.accommodation_type_id', '=', 'accommodation_types.id')
             ->select('accommodation_units.*', 'accommodation_types.name as type_name')
             ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('accommodation_units.name', 'like', "%{$this->search}%")
-                        ->orWhere('accommodation_types.name', 'like', "%{$this->search}%");
-                });
+                $term = '%' . strtolower($this->search) . '%';
+                $query->where(fn($q) =>
+                $q->whereRaw('LOWER(accommodation_units.name) LIKE ?', [$term])
+                    ->orWhereRaw('LOWER(accommodation_types.name) LIKE ?', [$term])
+                );
             })
             ->orderBy($this->sortBy === 'type_name' ? 'accommodation_types.name' : "accommodation_units.{$this->sortBy}", $this->sortDirection)
             ->paginate(10);
