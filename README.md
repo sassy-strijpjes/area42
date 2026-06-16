@@ -82,12 +82,28 @@ If you want to run the AI scripts directly without the Laravel endpoint:
 ```powershell
 cd ai
 ..\.venv\Scripts\Activate.ps1
-python scripts\train_model.py --input Data\Processed\occupancy_weekly.csv --train-output Data\Training\train_weekly.csv --test-output Data\Test\test_weekly.csv --model-output Models\occupancy_regressor.pkl --metrics-output Reports\metrics.json --predictions-output Reports\predictions.csv --predictions-json-output Reports\predictions.json
-python scripts\predict_occupancy.py --model Models\occupancy_regressor.pkl --history Data\Processed\occupancy_weekly.csv --weeks 14 --output Reports\future_predictions.csv
+
+# Train both weekly + daily models (default)
+python scripts\train_model.py
+
+# Train only one granularity
+python scripts\train_model.py --granularity weekly
+python scripts\train_model.py --granularity daily
+
+# Generate predictions
+python scripts\predict_occupancy.py --granularity weekly --periods 52
+python scripts\predict_occupancy.py --granularity daily --periods 90
 ```
 
-### Notes
+Daily predictions include a **day-over-day comparison** column showing whether a given day is more or less occupied than the previous day (e.g. "↑ lichte stijging", "→ stabiel"). This lets you quickly see if tomorrow will be busier than today.
 
-- The Laravel AI integration writes temporary training input files to `software/storage/app/ai`.
-- The Python scripts write model and report output under `ai/Models/`, `ai/Data/`, and `ai/Reports/`.
-- If the Python interpreter is not found on the default `PATH`, make sure `AI_PYTHON_BINARY` points to a valid Python executable.
+### Output files
+
+All output lands under `ai/` relative to the script location:
+
+| Granularity | Trained model | Future predictions |
+|---|---|---|
+| Weekly | `ai/Models/occupancy_regressor.pkl` | `ai/Reports/future_predictions.csv` |
+| Daily | `ai/Models/occupancy_regressor_daily.pkl` | `ai/Reports/future_predictions_daily.csv` |
+
+Metrics and test-set predictions are also written to `ai/Reports/`.
