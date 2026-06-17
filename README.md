@@ -197,20 +197,20 @@ The pipeline processes raw `date + occupancy_rate` into a trained model:
 
 From the raw `date` and `occupancy_rate`, the system derives these features:
 
-| Feature | Type | Description |
-|---|---|---|
-| `iso_week` | integer | ISO week number (1–53) |
-| `month` | integer | Month (1–12) |
-| `day_of_week` | integer | Day of week (0=Mon, 6=Sun) — daily only |
-| `is_weekend` | binary | 1 if Saturday or Sunday |
-| `is_holiday_period` | binary | 1 during school holidays (summer, May, autumn, Christmas) |
-| `previous_occupancy` | float | `occupancy_rate` from the **previous** day/week (`.shift(1)` — no data leakage) |
-| `rolling_*_occupancy` | float | Rolling mean of past occupancy (4-week for weekly; 7-day & 28-day for daily) |
-| `known_reservations_30d_before` | integer | Reservations known 30 days ahead (42, a calibrated proxy) |
-| `known_guest_count_30d_before` | float | `known_reservations × 3.4` (estimated guests) |
-| `known_average_nights_30d_before` | float | Average stay length (4.8 nights, a proxy) |
-| `day/week/month_sin` | float | Sine transform of cyclic time (Fourier term, period=365.25/52/12) |
-| `day/week/month_cos` | float | Cosine transform of cyclic time |
+| Feature                           | Type    | Description                                                                     |
+| --------------------------------- | ------- | ------------------------------------------------------------------------------- |
+| `iso_week`                        | integer | ISO week number (1–53)                                                          |
+| `month`                           | integer | Month (1–12)                                                                    |
+| `day_of_week`                     | integer | Day of week (0=Mon, 6=Sun) — daily only                                         |
+| `is_weekend`                      | binary  | 1 if Saturday or Sunday                                                         |
+| `is_holiday_period`               | binary  | 1 during school holidays (summer, May, autumn, Christmas)                       |
+| `previous_occupancy`              | float   | `occupancy_rate` from the **previous** day/week (`.shift(1)` — no data leakage) |
+| `rolling_*_occupancy`             | float   | Rolling mean of past occupancy (4-week for weekly; 7-day & 28-day for daily)    |
+| `known_reservations_30d_before`   | integer | Reservations known 30 days ahead (42, a calibrated proxy)                       |
+| `known_guest_count_30d_before`    | float   | `known_reservations × 3.4` (estimated guests)                                   |
+| `known_average_nights_30d_before` | float   | Average stay length (4.8 nights, a proxy)                                       |
+| `day/week/month_sin`              | float   | Sine transform of cyclic time (Fourier term, period=365.25/52/12)               |
+| `day/week/month_cos`              | float   | Cosine transform of cyclic time                                                 |
 
 > **Why Fourier terms?** Month "12" and month "1" are adjacent in a year but not
 > numerically. Sine/cosine encoding (`sin(2π × month/12)`) captures this
@@ -219,13 +219,13 @@ From the raw `date` and `occupancy_rate`, the system derives these features:
 
 #### Model performance
 
-| Metric | Weekly | Daily |
-|---|---|---|
-| Model | SARIMAX(1,1,1) | SARIMAX(2,0,0) |
-| MAE | 2.51% | 4.08% |
-| RMSE | 3.47% | 5.69% |
-| Train rows | 106 | 731 |
-| Test rows | 54 | 378 |
+| Metric     | Weekly              | Daily                   |
+| ---------- | ------------------- | ----------------------- |
+| Model      | SARIMAX(1,1,1)      | SARIMAX(2,0,0)          |
+| MAE        | 2.51%               | 4.08%                   |
+| RMSE       | 3.47%               | 5.69%                   |
+| Train rows | 106                 | 731                     |
+| Test rows  | 54                  | 378                     |
 | Data range | 2022‑W52 – 2026‑W03 | 2023‑01‑01 – 2026‑01‑13 |
 
 The weekly model is more accurate (averaging out daily noise). Both models
