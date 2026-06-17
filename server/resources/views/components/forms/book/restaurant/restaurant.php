@@ -3,11 +3,12 @@
 use App\Livewire\FormComponent;
 use App\Mail\Booking\RestaurantConfirmed;
 use Carbon\Carbon;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
-new class extends FormComponent
+new #[Layout('layouts::master')] class extends FormComponent
 {
     #[Validate('required|string|max:255')]
     public string $guest_name = '';

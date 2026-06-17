@@ -131,8 +131,8 @@ describe('Page', function () {
         $this->get(route('book.restaurant'))->assertOk();
     });
 
-    it('renders the correct view', function () {
-        $this->get(route('book.restaurant'))->assertViewIs('book.restaurant');
+    it('renders the reservation form heading', function () {
+        $this->get(route('book.restaurant'))->assertSee('Reserve a table');
     });
 
     it('mounts the Livewire component', function () {
