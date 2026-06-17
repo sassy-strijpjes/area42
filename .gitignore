@@ -1,9 +1,3 @@
-# AI generated output (reproducible from scripts)
-ai/Models/
-ai/Reports/
-ai/Data/Test/
-ai/Data/Training/
-
 # Temp files
 software/ai_payload.json
 software/csrf_cookies.txt
