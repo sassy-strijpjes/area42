@@ -56,55 +56,52 @@ The AI endpoint will be available at:
 
 ### Using the AI endpoints
 
-The AI feature has two endpoints:
-
-| Endpoint      | Method | Purpose                                    | Speed    |
-| ------------- | ------ | ------------------------------------------ | -------- |
-| `/ai/train`   | POST   | Upload full CSV → preprocess → train model | ~2-8 sec |
-| `/ai/predict` | POST   | Fast forecast from pre-trained model       | ~10 ms   |
+| Endpoint      | Method | Purpose                                      | Time                                             |
+| ------------- | ------ | -------------------------------------------- | ------------------------------------------------ |
+| `/ai/train`   | POST   | Upload full CSV → preprocess → train SARIMAX | ~2 sec (weekly) / ~8 sec (daily)                 |
+| `/ai/predict` | POST   | Fast forecast from pre-trained model         | ~10 ms (Python) / ~1 sec (PHP+Python round-trip) |
 
 ---
 
-#### `POST /ai/train` — Train the model
+#### Input format — `POST /ai/train`
 
-Upload your full historical occupancy dataset. The system preprocesses it (adds
-lag features, Fourier calendar terms) and trains a SARIMAX model.
+Send a JSON body with a `data` array. Each record needs exactly **2 fields**:
 
-**Request body:**
+| Field                   | Type                | Required | Description                    |
+| ----------------------- | ------------------- | -------- | ------------------------------ |
+| `data`                  | array               | yes      | Historical occupancy records   |
+| `data[].date`           | string (YYYY-MM-DD) | yes\*    | Date (for daily data)          |
+| `data[].week_start`     | string (YYYY-MM-DD) | yes\*    | Week-start Monday (for weekly) |
+| `data[].occupancy_rate` | number              | yes      | Occupancy % (0–100)            |
 
-| Field                   | Type                | Required | Description                               |
-| ----------------------- | ------------------- | -------- | ----------------------------------------- |
-| `data`                  | array               | yes      | Full historical occupancy records (min 1) |
-| `data[].date`           | string (YYYY-MM-DD) | yes\*    | Date of the record                        |
-| `data[].week_start`     | string (YYYY-MM-DD) | yes\*    | Week-start date (use for weekly data)     |
-| `data[].occupancy_rate` | number              | yes      | Occupancy percentage (0–100)              |
+> \*Use either `date` (daily) or `week_start` (weekly) — auto-detected from the
+> first record. Must be consistent within a request. Data is sorted by date
+> server-side, order in request doesn't matter.
 
-> \*Use `date` for daily data, `week_start` for weekly. Auto-detected.
-
-**Response:**
+**Response `POST /ai/train`:**
 
 ```json
 {
   "status": "trained",
   "granularity": "daily",
-  "model": "Models/occupancy_sarimax_daily.pkl"
+  "model": "Models/occupancy_daily.pkl"
 }
 ```
 
-#### `POST /ai/predict` — Get predictions
+---
 
-Fast forecast using the pre-trained model. No training data needed — just send
-the start date and number of days.
+#### Input format — `POST /ai/predict`
 
-**Request body:**
+Send a JSON body with **3 fields** (no historical data needed — model is already
+trained):
 
 | Field         | Type                | Required | Description                       |
 | ------------- | ------------------- | -------- | --------------------------------- |
-| `date`        | string (YYYY-MM-DD) | yes      | First prediction date             |
+| `date`        | string (YYYY-MM-DD) | yes      | First date to predict             |
 | `days`        | integer             | yes      | Number of periods ahead (1–730)   |
 | `granularity` | string              | no       | `"daily"` (default) or `"weekly"` |
 
-**Response:**
+**Response `POST /ai/predict` — 4 fields per prediction:**
 
 ```json
 {
@@ -127,49 +124,125 @@ the start date and number of days.
 }
 ```
 
-#### Example — Train then predict (curl)
+| Field              | Type   | Description                                            |
+| ------------------ | ------ | ------------------------------------------------------ |
+| `date`             | string | Prediction date (YYYY-MM-DD)                           |
+| `percentage_point` | number | Predicted occupancy % (0–100)                          |
+| `lower_bound`      | number | 80% confidence interval lower bound                    |
+| `upper_bound`      | number | 80% confidence interval upper bound                    |
+| `crowd_level`      | string | `"laag"` (<50%), `"normaal"` (50–80%), `"hoog"` (>80%) |
 
-```powershell
-curl.exe -i -c csrf_cookies.txt http://127.0.0.1:8000/
-$token = [uri]::UnescapeDataString((Get-Content csrf_cookies.txt | Where-Object { $_ -match 'XSRF-TOKEN' } | ForEach-Object { ($_ -split '\t')[6] }))
+---
 
-# Step 1: Train (upload full CSV data)
-$trainBody = '{"data":[{"date":"2023-01-01","occupancy_rate":2.5},{"date":"2023-01-02","occupancy_rate":5.0},...]}'
-Set-Content -Path ai_train.json -Value $trainBody
-curl.exe -X POST http://127.0.0.1:8000/ai/train -H "Accept: application/json" -H "Content-Type: application/json" -H "X-XSRF-TOKEN: $token" --cookie csrf_cookies.txt --data-binary '@ai_train.json'
+### Use cases
 
-# Step 2: Predict (no data needed — uses pre-trained model)
-$predictBody = '{"date":"2026-06-17","days":7,"granularity":"daily"}'
-Set-Content -Path ai_predict.json -Value $predictBody
-curl.exe -X POST http://127.0.0.1:8000/ai/predict -H "Accept: application/json" -H "Content-Type: application/json" -H "X-XSRF-TOKEN: $token" --cookie csrf_cookies.txt --data-binary '@ai_predict.json'
+#### Use case 1 — First time: train model, then predict next week
+
+You have a CSV of historical occupancy and no trained model yet.
+
 ```
+POST /ai/train  (2–8 sec)
+  → sends all historical data
+  → system preprocesses (lag features, Fourier calendar terms)
+  → trains SARIMAX model with baseline+residual decomposition
+  → saves to Models/occupancy_daily.pkl
+
+POST /ai/predict  (~1 sec)
+  → { "date": "2026-06-18", "days": 7 }
+  → returns 7 daily predictions with confidence intervals
+```
+
+#### Use case 2 — Already trained: predict without re-uploading data
+
+Model is already trained from use case 1. Just forecast.
+
+```
+POST /ai/predict  (~1 sec)
+  → { "date": "2026-07-01", "days": 14 }
+  → returns 14 daily predictions instantly
+```
+
+No data upload. The model on disk is reused. Run this as often as you want.
+
+#### Use case 3 — New data arrived: retrain, then predict
+
+You got fresh occupancy data and want the model to learn from it.
+
+```
+POST /ai/train  (2–8 sec)
+  → sends all historical data INCLUDING the new records
+  → retrains from scratch, overwrites the saved model
+
+POST /ai/predict  (~1 sec)
+  → { "date": "2026-06-18", "days": 7 }
+  → predictions now reflect the updated data
+```
+
+---
+
+### What happens under the hood
+
+The pipeline processes raw `date + occupancy_rate` into a trained model:
+
+1. **Preprocessing** — adds shifted lag features, Fourier calendar terms, and
+   booking proxies
+2. **Baseline** — computes average occupancy per ISO week (with month and global
+   fallback for unseen weeks)
+3. **Residual modeling** — SARIMAX trains on `actual − baseline` to capture
+   short-term deviations
+4. **Prediction** — `forecast = baseline(date) + SARIMAX(residual|date)` clipped
+   to 0–100%, with 80% confidence interval
+
+#### Features used for training
+
+From the raw `date` and `occupancy_rate`, the system derives these features:
+
+| Feature | Type | Description |
+|---|---|---|
+| `iso_week` | integer | ISO week number (1–53) |
+| `month` | integer | Month (1–12) |
+| `day_of_week` | integer | Day of week (0=Mon, 6=Sun) — daily only |
+| `is_weekend` | binary | 1 if Saturday or Sunday |
+| `is_holiday_period` | binary | 1 during school holidays (summer, May, autumn, Christmas) |
+| `previous_occupancy` | float | `occupancy_rate` from the **previous** day/week (`.shift(1)` — no data leakage) |
+| `rolling_*_occupancy` | float | Rolling mean of past occupancy (4-week for weekly; 7-day & 28-day for daily) |
+| `known_reservations_30d_before` | integer | Reservations known 30 days ahead (42, a calibrated proxy) |
+| `known_guest_count_30d_before` | float | `known_reservations × 3.4` (estimated guests) |
+| `known_average_nights_30d_before` | float | Average stay length (4.8 nights, a proxy) |
+| `day/week/month_sin` | float | Sine transform of cyclic time (Fourier term, period=365.25/52/12) |
+| `day/week/month_cos` | float | Cosine transform of cyclic time |
+
+> **Why Fourier terms?** Month "12" and month "1" are adjacent in a year but not
+> numerically. Sine/cosine encoding (`sin(2π × month/12)`) captures this
+> circular relationship, letting the model learn that December and January
+> behave similarly.
+
+#### Model performance
+
+| Metric | Weekly | Daily |
+|---|---|---|
+| Model | SARIMAX(1,1,1) | SARIMAX(2,0,0) |
+| MAE | 2.51% | 4.08% |
+| RMSE | 3.47% | 5.69% |
+| Train rows | 106 | 731 |
+| Test rows | 54 | 378 |
+| Data range | 2022‑W52 – 2026‑W03 | 2023‑01‑01 – 2026‑01‑13 |
+
+The weekly model is more accurate (averaging out daily noise). Both models
+correctly capture the seasonal pattern: winter lows (~2%), spring ramp (~25%),
+summer peak (~73%), autumn decline (~10%).
 
 ### Direct Python workflow
 
 ```powershell
 cd ai
-# Preprocess data
-python scripts/preprocess_daily.py
-python scripts/preprocess_weekly.py
 
-# Train SARIMAX models (run offline/scheduled)
-python scripts/train_sarimax_model.py --granularity both
+# Train both models (run once, or on a schedule)
+python scripts/train_model.py --granularity both
 
-# Predict using pre-trained models (fast, ~10 ms)
-python scripts/predict_sarimax.py --granularity daily --date 2026-06-17 --days 30
+# Predict using pre-trained model (fast)
+python scripts/predict_occupancy.py --granularity daily --date 2026-06-17 --days 30
 
-# Generate visualization graph
-python scripts/plot_occupancy_forecast.py --granularity daily
+# Generate forecast graph
+python scripts/plot_forecast.py
 ```
-
-### Model architecture
-
-The SARIMAX model uses a baseline + residual decomposition approach:
-
-1. **Baseline**: ISO-week average occupancy (with month/global fallback)
-2. **Residual**: SARIMAX model on the difference between actual and baseline
-3. **Prediction**: `baseline + SARIMAX(residual)` with 80% confidence interval
-4. **Calendar features**: Sine/cosine Fourier terms for week and month cycles
-
-The model is pre-trained offline. The predict endpoint only loads the saved
-model and generates the forecast — no retraining per request.
