@@ -58,10 +58,10 @@ The AI endpoint will be available at:
 
 The AI feature has two endpoints:
 
-| Endpoint | Method | Purpose | Speed |
-|---|---|---|---|
-| `/ai/train` | POST | Upload full CSV → preprocess → train model | ~2-8 sec |
-| `/ai/predict` | POST | Fast forecast from pre-trained model | ~10 ms |
+| Endpoint      | Method | Purpose                                    | Speed    |
+| ------------- | ------ | ------------------------------------------ | -------- |
+| `/ai/train`   | POST   | Upload full CSV → preprocess → train model | ~2-8 sec |
+| `/ai/predict` | POST   | Fast forecast from pre-trained model       | ~10 ms   |
 
 ---
 
@@ -72,12 +72,12 @@ lag features, Fourier calendar terms) and trains a SARIMAX model.
 
 **Request body:**
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `data` | array | yes | Full historical occupancy records (min 1) |
-| `data[].date` | string (YYYY-MM-DD) | yes* | Date of the record |
-| `data[].week_start` | string (YYYY-MM-DD) | yes* | Week-start date (use for weekly data) |
-| `data[].occupancy_rate` | number | yes | Occupancy percentage (0–100) |
+| Field                   | Type                | Required | Description                               |
+| ----------------------- | ------------------- | -------- | ----------------------------------------- |
+| `data`                  | array               | yes      | Full historical occupancy records (min 1) |
+| `data[].date`           | string (YYYY-MM-DD) | yes\*    | Date of the record                        |
+| `data[].week_start`     | string (YYYY-MM-DD) | yes\*    | Week-start date (use for weekly data)     |
+| `data[].occupancy_rate` | number              | yes      | Occupancy percentage (0–100)              |
 
 > \*Use `date` for daily data, `week_start` for weekly. Auto-detected.
 
@@ -98,11 +98,11 @@ the start date and number of days.
 
 **Request body:**
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `date` | string (YYYY-MM-DD) | yes | First prediction date |
-| `days` | integer | yes | Number of periods ahead (1–730) |
-| `granularity` | string | no | `"daily"` (default) or `"weekly"` |
+| Field         | Type                | Required | Description                       |
+| ------------- | ------------------- | -------- | --------------------------------- |
+| `date`        | string (YYYY-MM-DD) | yes      | First prediction date             |
+| `days`        | integer             | yes      | Number of periods ahead (1–730)   |
+| `granularity` | string              | no       | `"daily"` (default) or `"weekly"` |
 
 **Response:**
 
@@ -112,7 +112,7 @@ the start date and number of days.
     {
       "date": "2026-06-18",
       "percentage_point": 13.83,
-      "lower_bound": 7.80,
+      "lower_bound": 7.8,
       "upper_bound": 19.86,
       "crowd_level": "laag"
     },
