@@ -63,82 +63,27 @@ The AI endpoint will be available at:
 | Field                   | Type                | Required | Description                                           |
 | ----------------------- | ------------------- | -------- | ----------------------------------------------------- |
 | `data`                  | array               | yes      | Array of historical occupancy records (min 1)         |
-| `data[].week_start`     | string (YYYY-MM-DD) | yes\*    | Start date of the week                                |
-| `data[].date`           | string (YYYY-MM-DD) | yes\*    | Date (alternative to `week_start`; daily granularity) |
+| `data[].date`           | string (YYYY-MM-DD) | yes      | Date of the occupancy record                          |
 | `data[].occupancy_rate` | number              | yes      | Occupancy percentage (0–100)                          |
 | `days`                  | integer             | yes      | Number of days to predict ahead                       |
 
-> \*Either `week_start` or `date` is required per record. Use `week_start` for
-> weekly data.
+> Input data is always daily. The AI predicts daily occupancy percentages by
+> default. To get weekly predictions instead, use the `--granularity weekly`
+> flag when running the Python scripts directly.
 
 #### Response shape
 
 ```json
 {
   "predictions": [
-    { "date": "2026-06-23", "percentage_point": 74.52 },
-    { "date": "2026-06-30", "percentage_point": 76.18 },
-    { "date": "2026-07-07", "percentage_point": 82.95 }
+    { "date": "2026-06-18", "percentage_point": 74.52 },
+    { "date": "2026-06-19", "percentage_point": 76.18 },
+    { "date": "2026-06-20", "percentage_point": 82.95 }
   ]
 }
 ```
 
-#### Example 1 — Weekly history, predict 28 days
-
-**Request:**
-
-```json
-{
-  "data": [
-    { "week_start": "2026-05-12", "occupancy_rate": 42.5 },
-    { "week_start": "2026-05-19", "occupancy_rate": 48.7 },
-    { "week_start": "2026-05-26", "occupancy_rate": 55.0 },
-    { "week_start": "2026-06-02", "occupancy_rate": 60.2 },
-    { "week_start": "2026-06-09", "occupancy_rate": 68.3 }
-  ],
-  "days": 28
-}
-```
-
-**Response (4 weekly predictions, ~7 days apart):**
-
-```json
-{
-  "predictions": [
-    { "date": "2026-06-23", "percentage_point": 72.5 },
-    { "date": "2026-06-30", "percentage_point": 70.11 },
-    { "date": "2026-07-07", "percentage_point": 82.95 },
-    { "date": "2026-07-14", "percentage_point": 84.3 }
-  ]
-}
-```
-
-#### Example 2 — Short weekly history, predict 14 days
-
-**Request:**
-
-```json
-{
-  "data": [
-    { "week_start": "2026-06-02", "occupancy_rate": 34.1 },
-    { "week_start": "2026-06-09", "occupancy_rate": 40.6 }
-  ],
-  "days": 14
-}
-```
-
-**Response (2 weekly predictions):**
-
-```json
-{
-  "predictions": [
-    { "date": "2026-06-23", "percentage_point": 45.2 },
-    { "date": "2026-06-30", "percentage_point": 51.75 }
-  ]
-}
-```
-
-#### Example 3 — Using `date` keys (daily style), predict 7 days
+#### Example 1 — Daily history, predict 7 days
 
 **Request:**
 
@@ -149,17 +94,53 @@ The AI endpoint will be available at:
     { "date": "2026-06-10", "occupancy_rate": 45.1 },
     { "date": "2026-06-11", "occupancy_rate": 44.8 },
     { "date": "2026-06-12", "occupancy_rate": 42.0 },
-    { "date": "2026-06-13", "occupancy_rate": 47.5 }
+    { "date": "2026-06-13", "occupancy_rate": 47.5 },
+    ...
   ],
   "days": 7
 }
 ```
 
-**Response (1 weekly prediction for 7 days):**
+**Response (7 daily predictions):**
 
 ```json
 {
-  "predictions": [{ "date": "2026-06-23", "percentage_point": 49.3 }]
+  "predictions": [
+    { "date": "2026-06-18", "percentage_point": 44.10 },
+    { "date": "2026-06-19", "percentage_point": 44.80 },
+    { "date": "2026-06-20", "percentage_point": 45.95 },
+    { "date": "2026-06-21", "percentage_point": 46.30 },
+    { "date": "2026-06-22", "percentage_point": 47.10 },
+    { "date": "2026-06-23", "percentage_point": 48.25 },
+    { "date": "2026-06-24", "percentage_point": 49.30 }
+  ]
+}
+```
+
+#### Example 2 — Short daily history, predict 3 days
+
+**Request:**
+
+```json
+{
+  "data": [
+    { "date": "2026-06-15", "occupancy_rate": 34.1 },
+    { "date": "2026-06-16", "occupancy_rate": 40.6 },
+    ...
+  ],
+  "days": 3
+}
+```
+
+**Response (3 daily predictions):**
+
+```json
+{
+  "predictions": [
+    { "date": "2026-06-18", "percentage_point": 42.35 },
+    { "date": "2026-06-19", "percentage_point": 46.10 },
+    { "date": "2026-06-20", "percentage_point": 50.25 }
+  ]
 }
 ```
 
@@ -168,7 +149,7 @@ The AI endpoint will be available at:
 ```powershell
 curl.exe -i -c csrf_cookies.txt http://127.0.0.1:8000/
 $token = [uri]::UnescapeDataString((Get-Content csrf_cookies.txt | Where-Object { $_ -match 'XSRF-TOKEN' } | ForEach-Object { ($_ -split '\t')[6] }))
-$body = '{"data":[{"week_start":"2026-05-12","occupancy_rate":42.5},{"week_start":"2026-05-19","occupancy_rate":48.7},{"week_start":"2026-05-26","occupancy_rate":55.0},{"week_start":"2026-06-02","occupancy_rate":60.2},{"week_start":"2026-06-09","occupancy_rate":68.3}],"days":28}'
+$body = '{"data":[{"date":"2026-06-09","occupancy_rate":43.2},{"date":"2026-06-10","occupancy_rate":45.1},{"date":"2026-06-11","occupancy_rate":44.8},{"date":"2026-06-12","occupancy_rate":42.0},{"date":"2026-06-13","occupancy_rate":47.5}],"days":7}'
 Set-Content -Path ai_payload.json -Value $body
 curl.exe -X POST http://127.0.0.1:8000/ai/predict -H "Accept: application/json" -H "Content-Type: application/json" -H "X-XSRF-TOKEN: $token" --cookie csrf_cookies.txt --data-binary '@ai_payload.json'
 ```
@@ -188,15 +169,15 @@ python scripts\train_model.py
 python scripts\train_model.py --granularity weekly
 python scripts\train_model.py --granularity daily
 
-# Generate predictions
-python scripts\predict_occupancy.py --granularity weekly --periods 52
+# Generate predictions (daily is default; weekly can be requested via flag)
 python scripts\predict_occupancy.py --granularity daily --periods 90
+python scripts\predict_occupancy.py --granularity weekly --periods 52
 ```
 
-Daily predictions include a **day-over-day comparison** column showing whether a
-given day is more or less occupied than the previous day (e.g. "↑ lichte
-stijging", "→ stabiel"). This lets you quickly see if tomorrow will be busier
-than today.
+Both daily and weekly predictions output the same columns: a date,
+`predicted_occupancy` (percentage, 0–100), and `crowd_level` ("laag",
+"normaal", "hoog"). The only difference is the `--granularity` flag, which
+controls whether the output is daily (`stay_date`) or weekly (`week_start`).
 
 ### Output files
 

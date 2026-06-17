@@ -21,41 +21,60 @@ class AiPredictionService
             mkdir($tmpDirectory, 0755, true);
         }
 
-        $inputFile = $tmpDirectory . DIRECTORY_SEPARATOR . 'ai_training_input_' . uniqid() . '.csv';
-        $this->prepareTrainingCsv($data, $inputFile);
+        // Determine whether input uses weekly or daily keys
+        $isWeekly = $this->isWeeklyData($data);
 
-        $weeks = max(1, (int) ceil($days / 7));
+        // Save user data as history CSV for prediction seeding
+        $historyFile = $tmpDirectory . DIRECTORY_SEPARATOR . 'ai_history_input_' . uniqid() . '.csv';
+        $this->prepareHistoryCsv($data, $historyFile, $isWeekly);
+
         $pythonBinary = env('AI_PYTHON_BINARY', 'python');
 
+        // Train the model on the full processed dataset
+        $granularity = $isWeekly ? 'weekly' : 'daily';
         $this->runPythonScript($pythonBinary, $aiRoot, [
             'scripts/train_model.py',
-            '--input', $inputFile,
-            '--train-output', 'Data/Training/train_weekly.csv',
-            '--test-output', 'Data/Test/test_weekly.csv',
-            '--model-output', 'Models/occupancy_regressor.pkl',
-            '--metrics-output', 'Reports/metrics.json',
-            '--predictions-output', 'Reports/predictions.csv',
-            '--predictions-json-output', 'Reports/predictions.json',
+            '--granularity', $granularity,
         ]);
 
+        // Run predictions using the user's history as the starting point
         $predictionOutput = $aiRoot . DIRECTORY_SEPARATOR . 'Reports' . DIRECTORY_SEPARATOR . 'future_predictions.csv';
         $this->runPythonScript($pythonBinary, $aiRoot, [
             'scripts/predict_occupancy.py',
-            '--model', 'Models/occupancy_regressor.pkl',
-            '--history', $inputFile,
-            '--weeks', (string) $weeks,
+            '--granularity', $granularity,
+            '--history', $historyFile,
+            '--periods', (string) $days,
             '--output', 'Reports/future_predictions.csv',
         ]);
 
-        $predictions = $this->loadPredictionsCsv($predictionOutput);
+        $predictions = $this->loadPredictionsCsv($predictionOutput, $isWeekly);
 
-        @unlink($inputFile);
+        @unlink($historyFile);
 
         return $predictions;
     }
 
-    protected function prepareTrainingCsv(array $data, string $path): void
+    protected function isWeeklyData(array $data): bool
     {
+        foreach ($data as $item) {
+            if (isset($item['week_start'])) {
+                return true;
+            }
+            if (isset($item['date'])) {
+                return false;
+            }
+        }
+        // Default to daily if no keys found
+        return false;
+    }
+
+    /**
+     * Write user-submitted historical data as a CSV that predict_occupancy.py
+     * can consume. The column name depends on the granularity.
+     */
+    protected function prepareHistoryCsv(array $data, string $path, bool $isWeekly): void
+    {
+        $dateCol = $isWeekly ? 'week_start' : 'stay_date';
         $rows = [];
 
         foreach ($data as $index => $item) {
@@ -84,23 +103,23 @@ class AiPredictionService
             }
 
             $rows[] = [
-                'week_start' => $date->format('Y-m-d'),
+                $dateCol => $date->format('Y-m-d'),
                 'occupancy_rate' => (float) $occupancyValue,
             ];
         }
 
-        usort($rows, static function (array $a, array $b) {
-            return strcmp($a['week_start'], $b['week_start']);
+        usort($rows, static function (array $a, array $b) use ($dateCol) {
+            return strcmp($a[$dateCol], $b[$dateCol]);
         });
 
         $file = fopen($path, 'wb');
         if ($file === false) {
-            throw new \RuntimeException('Unable to open temporary training file for writing: ' . $path);
+            throw new \RuntimeException('Unable to open temporary history file for writing: ' . $path);
         }
 
-        fputcsv($file, ['week_start', 'occupancy_rate']);
+        fputcsv($file, [$dateCol, 'occupancy_rate']);
         foreach ($rows as $row) {
-            fputcsv($file, [$row['week_start'], $row['occupancy_rate']]);
+            fputcsv($file, [$row[$dateCol], $row['occupancy_rate']]);
         }
 
         fclose($file);
@@ -126,7 +145,7 @@ class AiPredictionService
         }
     }
 
-    protected function loadPredictionsCsv(string $path): array
+    protected function loadPredictionsCsv(string $path, bool $isWeekly): array
     {
         if (!file_exists($path)) {
             throw new \RuntimeException('Prediction output file not found: ' . $path);
@@ -143,6 +162,9 @@ class AiPredictionService
             throw new \RuntimeException('Prediction output file is empty: ' . $path);
         }
 
+        // Daily CSVs use "stay_date", weekly CSVs use "week_start"
+        $dateCol = $isWeekly ? 'week_start' : 'stay_date';
+
         $predictions = [];
         while (($row = fgetcsv($file)) !== false) {
             $record = array_combine($header, $row);
@@ -150,8 +172,14 @@ class AiPredictionService
                 continue;
             }
 
+            $dateValue = $record[$dateCol] ?? null;
+            // Weekly predictions include year in the period; extract date portion
+            if ($dateValue === null && isset($record['period'])) {
+                $dateValue = $record['period']; // e.g. "2026-W25"
+            }
+
             $predictions[] = [
-                'date' => $record['week_start'] ?? null,
+                'date' => $dateValue,
                 'percentage_point' => isset($record['predicted_occupancy']) ? (float) $record['predicted_occupancy'] : null,
             ];
         }

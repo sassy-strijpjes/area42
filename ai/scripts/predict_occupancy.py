@@ -16,8 +16,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--granularity",
         choices=["weekly", "daily"],
-        default="weekly",
-        help="Prediction granularity: weekly or daily (default: weekly).",
+        default="daily",
+        help="Prediction granularity: weekly or daily (default: daily).",
     )
     parser.add_argument("--model", default=None, help="Path to model .pkl (auto-detected from --granularity)")
     parser.add_argument("--history", default=None, help="Path to history CSV (auto-detected from --granularity)")
@@ -59,18 +59,6 @@ def crowd_level(value: float) -> str:
     return "hoog"
 
 
-def day_over_day_change(today: float, yesterday: float) -> str:
-    """Return a human-readable day-over-day change description."""
-    diff = today - yesterday
-    if diff > 5:
-        return f"↑ sterkere bezetting (+{diff:.1f}%)"
-    if diff > 1:
-        return f"↑ lichte stijging (+{diff:.1f}%)"
-    if diff < -5:
-        return f"↓ sterkere daling ({diff:.1f}%)"
-    if diff < -1:
-        return f"↓ lichte daling ({diff:.1f}%)"
-    return "→ stabiel"
 
 
 # ── Weekly prediction ───────────────────────────────────────────────
@@ -170,15 +158,11 @@ def predict_daily(args: argparse.Namespace) -> None:
 
         prediction = float(bundle["model"].predict(pd.DataFrame([row])[feature_columns])[0])
         prediction = min(max(prediction, 0), 100)
-        yesterday_value = previous_occupancy
 
         rows.append(
             {
                 "stay_date": pred_date.date().isoformat(),
-                "day_of_week": pred_date.day_name(),
                 "predicted_occupancy": round(prediction, 2),
-                "yesterday_occupancy": round(yesterday_value, 2),
-                "day_over_day_change": day_over_day_change(prediction, yesterday_value),
                 "crowd_level": crowd_level(prediction),
             }
         )
@@ -190,19 +174,16 @@ def predict_daily(args: argparse.Namespace) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rows).to_csv(output, index=False)
     print(f"[daily] Wrote {len(rows)} future predictions to {output}")
-    print("Sample predictions:")
-    for r in rows[:5]:
-        print(f"  {r['stay_date']} ({r['day_of_week']}): {r['predicted_occupancy']}% — {r['day_over_day_change']}")
 
 
 # ── Main ────────────────────────────────────────────────────────────
 
 def main() -> None:
     args = parse_args()
-    if args.granularity == "daily":
-        predict_daily(args)
-    else:
+    if args.granularity == "weekly":
         predict_weekly(args)
+    else:
+        predict_daily(args)
 
 
 if __name__ == "__main__":
