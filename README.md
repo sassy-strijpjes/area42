@@ -54,138 +54,122 @@ The AI endpoint will be available at:
 
 - `http://127.0.0.1:8000/ai/predict`
 
-### Using the AI endpoint
+### Using the AI endpoints
 
-**Endpoint:** `POST http://127.0.0.1:8000/ai/predict`
+The AI feature has two endpoints:
 
-#### Request shape
+| Endpoint | Method | Purpose | Speed |
+|---|---|---|---|
+| `/ai/train` | POST | Upload full CSV → preprocess → train model | ~2-8 sec |
+| `/ai/predict` | POST | Fast forecast from pre-trained model | ~10 ms |
 
-| Field                   | Type                | Required | Description                                           |
-| ----------------------- | ------------------- | -------- | ----------------------------------------------------- |
-| `data`                  | array               | yes      | Array of historical occupancy records (min 1)         |
-| `data[].date`           | string (YYYY-MM-DD) | yes      | Date of the occupancy record                          |
-| `data[].occupancy_rate` | number              | yes      | Occupancy percentage (0–100)                          |
-| `days`                  | integer             | yes      | Number of days to predict ahead                       |
+---
 
-> Input data is always daily. The AI predicts daily occupancy percentages by
-> default. To get weekly predictions instead, use the `--granularity weekly`
-> flag when running the Python scripts directly.
+#### `POST /ai/train` — Train the model
 
-#### Response shape
+Upload your full historical occupancy dataset. The system preprocesses it (adds
+lag features, Fourier calendar terms) and trains a SARIMAX model.
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `data` | array | yes | Full historical occupancy records (min 1) |
+| `data[].date` | string (YYYY-MM-DD) | yes* | Date of the record |
+| `data[].week_start` | string (YYYY-MM-DD) | yes* | Week-start date (use for weekly data) |
+| `data[].occupancy_rate` | number | yes | Occupancy percentage (0–100) |
+
+> \*Use `date` for daily data, `week_start` for weekly. Auto-detected.
+
+**Response:**
+
+```json
+{
+  "status": "trained",
+  "granularity": "daily",
+  "model": "Models/occupancy_sarimax_daily.pkl"
+}
+```
+
+#### `POST /ai/predict` — Get predictions
+
+Fast forecast using the pre-trained model. No training data needed — just send
+the start date and number of days.
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `date` | string (YYYY-MM-DD) | yes | First prediction date |
+| `days` | integer | yes | Number of periods ahead (1–730) |
+| `granularity` | string | no | `"daily"` (default) or `"weekly"` |
+
+**Response:**
 
 ```json
 {
   "predictions": [
-    { "date": "2026-06-18", "percentage_point": 74.52 },
-    { "date": "2026-06-19", "percentage_point": 76.18 },
-    { "date": "2026-06-20", "percentage_point": 82.95 }
+    {
+      "date": "2026-06-18",
+      "percentage_point": 13.83,
+      "lower_bound": 7.80,
+      "upper_bound": 19.86,
+      "crowd_level": "laag"
+    },
+    {
+      "date": "2026-06-19",
+      "percentage_point": 14.44,
+      "lower_bound": 8.03,
+      "upper_bound": 20.84,
+      "crowd_level": "laag"
+    }
   ]
 }
 ```
 
-#### Example 1 — Daily history, predict 7 days
-
-**Request:**
-
-```json
-{
-  "data": [
-    { "date": "2026-06-09", "occupancy_rate": 43.2 },
-    { "date": "2026-06-10", "occupancy_rate": 45.1 },
-    { "date": "2026-06-11", "occupancy_rate": 44.8 },
-    { "date": "2026-06-12", "occupancy_rate": 42.0 },
-    { "date": "2026-06-13", "occupancy_rate": 47.5 },
-    ...
-  ],
-  "days": 7
-}
-```
-
-**Response (7 daily predictions):**
-
-```json
-{
-  "predictions": [
-    { "date": "2026-06-18", "percentage_point": 44.10 },
-    { "date": "2026-06-19", "percentage_point": 44.80 },
-    { "date": "2026-06-20", "percentage_point": 45.95 },
-    { "date": "2026-06-21", "percentage_point": 46.30 },
-    { "date": "2026-06-22", "percentage_point": 47.10 },
-    { "date": "2026-06-23", "percentage_point": 48.25 },
-    { "date": "2026-06-24", "percentage_point": 49.30 }
-  ]
-}
-```
-
-#### Example 2 — Short daily history, predict 3 days
-
-**Request:**
-
-```json
-{
-  "data": [
-    { "date": "2026-06-15", "occupancy_rate": 34.1 },
-    { "date": "2026-06-16", "occupancy_rate": 40.6 },
-    ...
-  ],
-  "days": 3
-}
-```
-
-**Response (3 daily predictions):**
-
-```json
-{
-  "predictions": [
-    { "date": "2026-06-18", "percentage_point": 42.35 },
-    { "date": "2026-06-19", "percentage_point": 46.10 },
-    { "date": "2026-06-20", "percentage_point": 50.25 }
-  ]
-}
-```
-
-### Using curl (PowerShell, with CSRF)
+#### Example — Train then predict (curl)
 
 ```powershell
 curl.exe -i -c csrf_cookies.txt http://127.0.0.1:8000/
 $token = [uri]::UnescapeDataString((Get-Content csrf_cookies.txt | Where-Object { $_ -match 'XSRF-TOKEN' } | ForEach-Object { ($_ -split '\t')[6] }))
-$body = '{"data":[{"date":"2026-06-09","occupancy_rate":43.2},{"date":"2026-06-10","occupancy_rate":45.1},{"date":"2026-06-11","occupancy_rate":44.8},{"date":"2026-06-12","occupancy_rate":42.0},{"date":"2026-06-13","occupancy_rate":47.5}],"days":7}'
-Set-Content -Path ai_payload.json -Value $body
-curl.exe -X POST http://127.0.0.1:8000/ai/predict -H "Accept: application/json" -H "Content-Type: application/json" -H "X-XSRF-TOKEN: $token" --cookie csrf_cookies.txt --data-binary '@ai_payload.json'
+
+# Step 1: Train (upload full CSV data)
+$trainBody = '{"data":[{"date":"2023-01-01","occupancy_rate":2.5},{"date":"2023-01-02","occupancy_rate":5.0},...]}'
+Set-Content -Path ai_train.json -Value $trainBody
+curl.exe -X POST http://127.0.0.1:8000/ai/train -H "Accept: application/json" -H "Content-Type: application/json" -H "X-XSRF-TOKEN: $token" --cookie csrf_cookies.txt --data-binary '@ai_train.json'
+
+# Step 2: Predict (no data needed — uses pre-trained model)
+$predictBody = '{"date":"2026-06-17","days":7,"granularity":"daily"}'
+Set-Content -Path ai_predict.json -Value $predictBody
+curl.exe -X POST http://127.0.0.1:8000/ai/predict -H "Accept: application/json" -H "Content-Type: application/json" -H "X-XSRF-TOKEN: $token" --cookie csrf_cookies.txt --data-binary '@ai_predict.json'
 ```
 
 ### Direct Python workflow
 
-If you want to run the AI scripts directly without the Laravel endpoint:
-
 ```powershell
 cd ai
-..\.venv\Scripts\Activate.ps1
+# Preprocess data
+python scripts/preprocess_daily.py
+python scripts/preprocess_weekly.py
 
-# Train both weekly + daily models (default)
-python scripts\train_model.py
+# Train SARIMAX models (run offline/scheduled)
+python scripts/train_sarimax_model.py --granularity both
 
-# Train only one granularity
-python scripts\train_model.py --granularity weekly
-python scripts\train_model.py --granularity daily
+# Predict using pre-trained models (fast, ~10 ms)
+python scripts/predict_sarimax.py --granularity daily --date 2026-06-17 --days 30
 
-# Generate predictions (daily is default; weekly can be requested via flag)
-python scripts\predict_occupancy.py --granularity daily --periods 90
-python scripts\predict_occupancy.py --granularity weekly --periods 52
+# Generate visualization graph
+python scripts/plot_occupancy_forecast.py --granularity daily
 ```
 
-Both daily and weekly predictions output the same columns: a date,
-`predicted_occupancy` (percentage, 0–100), and `crowd_level` ("laag",
-"normaal", "hoog"). The only difference is the `--granularity` flag, which
-controls whether the output is daily (`stay_date`) or weekly (`week_start`).
+### Model architecture
 
-### Output files
+The SARIMAX model uses a baseline + residual decomposition approach:
 
-All output lands under `ai/` relative to the script location:
+1. **Baseline**: ISO-week average occupancy (with month/global fallback)
+2. **Residual**: SARIMAX model on the difference between actual and baseline
+3. **Prediction**: `baseline + SARIMAX(residual)` with 80% confidence interval
+4. **Calendar features**: Sine/cosine Fourier terms for week and month cycles
 
-| Granularity | Trained model                             | Future predictions                        |
-| ----------- | ----------------------------------------- | ----------------------------------------- |
-| Weekly      | `ai/Models/occupancy_regressor.pkl`       | `ai/Reports/future_predictions.csv`       |
-| Daily       | `ai/Models/occupancy_regressor_daily.pkl` | `ai/Reports/future_predictions_daily.csv` |
-
-Metrics and test-set predictions are also written to `ai/Reports/`.
+The model is pre-trained offline. The predict endpoint only loads the saved
+model and generates the forecast — no retraining per request.

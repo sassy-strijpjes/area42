@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\Route;
 
 require __DIR__ . '/admin.php';
 
-Route::post('ai/predict', [AiPredictionController::class, 'trainAndPredict']);
+Route::post('ai/train', [AiPredictionController::class, 'train']);
+Route::post('ai/predict', [AiPredictionController::class, 'predict']);
 
 Route::name('staff.')->middleware(['auth'])->group(function () {
     Route::get('forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot-password');

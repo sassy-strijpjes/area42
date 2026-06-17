@@ -8,139 +8,129 @@ use Symfony\Component\Process\Process;
 
 class AiPredictionService
 {
-    public function trainAndPredict(array $data, int $days): array
+    /**
+     * Train the model: accept a full CSV, preprocess, train SARIMAX, save.
+     * Called offline or via POST /ai/train. Takes ~2-8 sec.
+     */
+    public function train(array $data): array
     {
-        $aiRoot = realpath(base_path('../ai')) ?: realpath(base_path('ai'));
-
-        if ($aiRoot === false || !is_dir($aiRoot)) {
-            throw new \RuntimeException('AI folder not found. Create an ai folder inside the area42 root. Expected location: ' . base_path('../ai'));
+        $aiRoot = $this->aiRoot();
+        $tmpDir = storage_path('app/ai');
+        if (!is_dir($tmpDir)) {
+            mkdir($tmpDir, 0755, true);
         }
 
-        $tmpDirectory = storage_path('app/ai');
-        if (!is_dir($tmpDirectory)) {
-            mkdir($tmpDirectory, 0755, true);
-        }
-
-        // Determine whether input uses weekly or daily keys
         $isWeekly = $this->isWeeklyData($data);
-
-        // Save user data as history CSV for prediction seeding
-        $historyFile = $tmpDirectory . DIRECTORY_SEPARATOR . 'ai_history_input_' . uniqid() . '.csv';
-        $this->prepareHistoryCsv($data, $historyFile, $isWeekly);
-
-        $pythonBinary = env('AI_PYTHON_BINARY', 'python');
-
-        // Train the model on the full processed dataset
         $granularity = $isWeekly ? 'weekly' : 'daily';
-        $this->runPythonScript($pythonBinary, $aiRoot, [
+        $dateCol = $isWeekly ? 'week_start' : 'stay_date';
+
+        $csvPath = $tmpDir . DIRECTORY_SEPARATOR . 'ai_training_' . uniqid() . '.csv';
+        $this->writeCsv($data, $csvPath, $dateCol);
+
+        $this->runPython($aiRoot, [
             'scripts/train_model.py',
             '--granularity', $granularity,
+            ($isWeekly ? '--weekly-input' : '--daily-input'), $csvPath,
         ]);
 
-        // Run predictions using the user's history as the starting point
-        $predictionOutput = $aiRoot . DIRECTORY_SEPARATOR . 'Reports' . DIRECTORY_SEPARATOR . 'future_predictions.csv';
-        $this->runPythonScript($pythonBinary, $aiRoot, [
+        @unlink($csvPath);
+
+        $modelName = $isWeekly ? 'weekly' : 'daily';
+        return [
+            'status' => 'trained',
+            'granularity' => $granularity,
+            'model' => "Models/occupancy_{$modelName}.pkl",
+        ];
+    }
+
+    /**
+     * Predict: use the pre-trained SARIMAX model.
+     * Fast — loads model + generates forecast in ~10 ms.
+     * POST /ai/predict  { "date": "2026-06-17", "days": 30 }
+     */
+    public function predict(string $startDate, int $days, string $granularity = 'daily'): array
+    {
+        $aiRoot = $this->aiRoot();
+        $outputFile = 'future_predictions_' . $granularity . '.csv';
+
+        $this->runPython($aiRoot, [
             'scripts/predict_occupancy.py',
             '--granularity', $granularity,
-            '--history', $historyFile,
-            '--periods', (string) $days,
-            '--output', 'Reports/future_predictions.csv',
+            '--date', $startDate,
+            '--days', (string) $days,
         ]);
 
-        $predictions = $this->loadPredictionsCsv($predictionOutput, $isWeekly);
+        return $this->loadPredictionsCsv(
+            $aiRoot . '/Reports/' . $outputFile,
+            $granularity === 'weekly'
+        );
+    }
 
-        @unlink($historyFile);
+    // ── Helpers ────────────────────────────────────────────────────
 
-        return $predictions;
+    protected function aiRoot(): string
+    {
+        $root = realpath(base_path('../ai')) ?: realpath(base_path('ai'));
+        if ($root === false || !is_dir($root)) {
+            throw new \RuntimeException(
+                'AI folder not found. Expected: ' . base_path('../ai')
+            );
+        }
+        return $root;
     }
 
     protected function isWeeklyData(array $data): bool
     {
         foreach ($data as $item) {
-            if (isset($item['week_start'])) {
-                return true;
-            }
-            if (isset($item['date'])) {
-                return false;
-            }
+            if (isset($item['week_start'])) return true;
+            if (isset($item['date'])) return false;
         }
-        // Default to daily if no keys found
         return false;
     }
 
-    /**
-     * Write user-submitted historical data as a CSV that predict_occupancy.py
-     * can consume. The column name depends on the granularity.
-     */
-    protected function prepareHistoryCsv(array $data, string $path, bool $isWeekly): void
+    protected function writeCsv(array $data, string $path, string $dateCol): void
     {
-        $dateCol = $isWeekly ? 'week_start' : 'stay_date';
         $rows = [];
-
-        foreach ($data as $index => $item) {
-            if (!is_array($item)) {
-                throw new \InvalidArgumentException('Each item in data must be an object with week_start or date and occupancy_rate. Item index: ' . $index);
-            }
-
+        foreach ($data as $i => $item) {
             $dateValue = $item['week_start'] ?? $item['date'] ?? null;
-            $occupancyValue = $item['occupancy_rate'] ?? null;
-
-            if ($dateValue === null || $occupancyValue === null) {
-                throw new \InvalidArgumentException('Each data item must contain week_start or date and occupancy_rate. Item index: ' . $index);
+            $occValue = $item['occupancy_rate'] ?? null;
+            if ($dateValue === null || $occValue === null) {
+                throw new \InvalidArgumentException("Item $i missing date or occupancy_rate");
             }
-
             $date = \DateTime::createFromFormat('Y-m-d', (string) $dateValue);
             if ($date === false) {
                 $date = new \DateTime((string) $dateValue);
             }
-
-            if ($date === false) {
-                throw new \InvalidArgumentException('Invalid date format for item index: ' . $index . '. Use YYYY-MM-DD.');
+            if (!is_numeric($occValue)) {
+                throw new \InvalidArgumentException("occupancy_rate must be numeric at index $i");
             }
-
-            if (!is_numeric($occupancyValue)) {
-                throw new \InvalidArgumentException('occupancy_rate must be numeric for item index: ' . $index);
-            }
-
-            $rows[] = [
-                $dateCol => $date->format('Y-m-d'),
-                'occupancy_rate' => (float) $occupancyValue,
-            ];
+            $rows[] = [$dateCol => $date->format('Y-m-d'), 'occupancy_rate' => (float) $occValue];
         }
-
-        usort($rows, static function (array $a, array $b) use ($dateCol) {
-            return strcmp($a[$dateCol], $b[$dateCol]);
-        });
+        usort($rows, fn($a, $b) => strcmp($a[$dateCol], $b[$dateCol]));
 
         $file = fopen($path, 'wb');
-        if ($file === false) {
-            throw new \RuntimeException('Unable to open temporary history file for writing: ' . $path);
-        }
-
         fputcsv($file, [$dateCol, 'occupancy_rate']);
-        foreach ($rows as $row) {
-            fputcsv($file, [$row[$dateCol], $row['occupancy_rate']]);
+        foreach ($rows as $r) {
+            fputcsv($file, [$r[$dateCol], $r['occupancy_rate']]);
         }
-
         fclose($file);
     }
 
-    protected function runPythonScript(string $pythonBinary, string $workingDir, array $arguments): void
+    protected function runPython(string $workingDir, array $arguments): void
     {
-        $command = array_merge([$pythonBinary], $arguments);
-        $process = new Process($command, $workingDir);
+        $python = env('AI_PYTHON_BINARY', 'python');
+        $process = new Process(array_merge([$python], $arguments), $workingDir);
         $process->setTimeout(300);
         $process->run();
 
         if (!$process->isSuccessful()) {
-            $message = sprintf(
-                "AI process failed. Command: %s. Exit code: %s. Output: %s. Error: %s",
-                implode(' ', $command),
+            $msg = sprintf(
+                "AI process failed. Cmd: %s. Exit: %s. Error: %s",
+                implode(' ', $arguments),
                 $process->getExitCode(),
-                $process->getOutput(),
                 $process->getErrorOutput(),
             );
-            Log::error($message);
+            Log::error($msg);
             throw new ProcessFailedException($process);
         }
     }
@@ -148,44 +138,29 @@ class AiPredictionService
     protected function loadPredictionsCsv(string $path, bool $isWeekly): array
     {
         if (!file_exists($path)) {
-            throw new \RuntimeException('Prediction output file not found: ' . $path);
+            throw new \RuntimeException("Prediction file not found: $path");
         }
-
-        $file = fopen($path, 'rb');
-        if ($file === false) {
-            throw new \RuntimeException('Unable to read prediction output file: ' . $path);
-        }
-
-        $header = fgetcsv($file);
+        $f = fopen($path, 'rb');
+        $header = fgetcsv($f);
         if ($header === false) {
-            fclose($file);
-            throw new \RuntimeException('Prediction output file is empty: ' . $path);
+            fclose($f);
+            throw new \RuntimeException("Empty prediction file: $path");
         }
 
-        // Daily CSVs use "stay_date", weekly CSVs use "week_start"
         $dateCol = $isWeekly ? 'week_start' : 'stay_date';
-
         $predictions = [];
-        while (($row = fgetcsv($file)) !== false) {
-            $record = array_combine($header, $row);
-            if ($record === false) {
-                continue;
-            }
-
-            $dateValue = $record[$dateCol] ?? null;
-            // Weekly predictions include year in the period; extract date portion
-            if ($dateValue === null && isset($record['period'])) {
-                $dateValue = $record['period']; // e.g. "2026-W25"
-            }
-
+        while (($row = fgetcsv($f)) !== false) {
+            $rec = array_combine($header, $row);
+            if ($rec === false) continue;
             $predictions[] = [
-                'date' => $dateValue,
-                'percentage_point' => isset($record['predicted_occupancy']) ? (float) $record['predicted_occupancy'] : null,
+                'date' => $rec[$dateCol] ?? null,
+                'percentage_point' => isset($rec['predicted_occupancy']) ? (float) $rec['predicted_occupancy'] : null,
+                'lower_bound' => isset($rec['lower_bound']) ? (float) $rec['lower_bound'] : null,
+                'upper_bound' => isset($rec['upper_bound']) ? (float) $rec['upper_bound'] : null,
+                'crowd_level' => $rec['crowd_level'] ?? null,
             ];
         }
-
-        fclose($file);
-
+        fclose($f);
         return array_values($predictions);
     }
 }
