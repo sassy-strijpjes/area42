@@ -46,18 +46,6 @@ class RolePermissionSeeder extends Seeder
         'add_accommodation-bookings',
         'edit_accommodation-bookings',
         'delete_accommodation-bookings',
-        'view_accommodation-types',
-        'add_accommodation-types',
-        'edit_accommodation-types',
-        'delete_accommodation-types',
-        'view_accommodation-units',
-        'add_accommodation-units',
-        'edit_accommodation-units',
-        'delete_accommodation-units',
-        'view_accommodation-pricing-rules',
-        'add_accommodation-pricing-rules',
-        'edit_accommodation-pricing-rules',
-        'delete_accommodation-pricing-rules',
     ];
 
     public array $rolePermissions = [
