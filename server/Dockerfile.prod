@@ -55,8 +55,7 @@ COPY . .
 
 COPY --from=frontend /app/public/build ./public/build
 
-RUN php artisan migrate:fresh --force \
-    && php artisan db:seed \
+RUN php artisan migrate --force \
     && php artisan optimize:clear \
     && php artisan optimize
 
