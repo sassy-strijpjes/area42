@@ -12,7 +12,11 @@ services:
             - pgdata:/var/lib/postgresql/data
 
     app:
-        build: .
+        build:
+            dockerfile: Dockerfile
+            context: .
+        env_file:
+            - .env
         restart: "no"
         ports:
             - "8000:8000"
