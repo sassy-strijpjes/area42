@@ -77,17 +77,16 @@ RUN composer dump-autoload --optimize --no-scripts
 
 # now run package discovery explicitly so failures are easier to inspect
 RUN php artisan package:discover --ansi
-RUN php artisan config:cache
-RUN php artisan route:cache
-RUN php artisan view:cache
+RUN php artisan migrate:fresh --force
+RUN php artisan db:seed --force
+RUN php artisan optimize:clear
+RUN php artisan optimize
 
 RUN chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 9000
 
-CMD composer dump-autoload \
-    && php artisan migrate:fresh --force \
-    && php artisan db:seed --force \
+CMD php artisan migrate --force \
+    && php artisan db:seed --class="Database\Seeders\DatabaseSeeder" --force \
     && php artisan optimize:clear \
-    && php artisan optimize \
     && php artisan serve --host=0.0.0.0 --port=8000
