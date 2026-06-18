@@ -197,7 +197,7 @@ describe('Table', function () {
 
     it('filters results by search', function () {
         createAccommodationType(['name' => 'Bungalow']);
-        createAccommodationType(['name' => 'Chalet']);
+        createAccommodationType(['name' => 'Chalet', 'description' => 'A mountain chalet']);
 
         Livewire::test('tables.accommodation.types')
             ->dispatch('accommodation-type-search', value: 'Bungalow')

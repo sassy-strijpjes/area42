@@ -38,30 +38,34 @@
                     </flux:navbar.item>
                 @endcan
 
-                @can('view_restaurant-bookings')
+                @if(can('view_restaurant-bookings') || can('view_accommodation-bookings'))
                     <flux:dropdown>
                         <flux:navbar.item
                             icon="calendar-days"
                             icon:trailing="chevron-down"
-                            :current="request()->routeIs('staff.restaurant.bookings*')"
+                            :current="request()->routeIs('staff.restaurant.bookings*') || request()->routeIs('staff.accommodation.bookings*')"
                             wire:navigate
                         >
                             Bookings
                         </flux:navbar.item>
                         <flux:navmenu>
-                            <flux:navmenu.item href="{{ route('staff.restaurant.bookings') }}">Restaurant</flux:navmenu.item>
-                            <flux:navmenu.item href="#">Accommodation</flux:navmenu.item>
+                            @can('view_restaurant-bookings')
+                                <flux:navmenu.item href="{{ route('staff.restaurant.bookings') }}">Restaurant</flux:navmenu.item>
+                            @endcan
+                            @can('view_accommodation-bookings')
+                                <flux:navmenu.item href="{{ route('staff.accommodation.bookings') }}">Accommodation</flux:navmenu.item>
+                            @endcan
                             <flux:navmenu.item href="#">Bikes</flux:navmenu.item>
                         </flux:navmenu>
                     </flux:dropdown>
-                @endcan
+                @endif
 
                 @if(can('view_accommodation-types') || can('view_accommodation-units') || can('view_accommodation-pricing-rules'))
                     <flux:dropdown>
                         <flux:navbar.item
                                 icon="home-modern"
                                 icon:trailing="chevron-down"
-                                :current="request()->routeIs('staff.accommodation*')"
+                                :current="request()->routeIs('staff.accommodation.types*') || request()->routeIs('staff.accommodation.units*') || request()->routeIs('staff.accommodation.pricing*')"
                                 wire:navigate
                         >
                             Accommodation

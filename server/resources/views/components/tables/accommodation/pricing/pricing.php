@@ -48,7 +48,7 @@ new class extends Component
             ->leftJoin('accommodation_pricing', 'accommodation_types.id', '=', 'accommodation_pricing.accommodation_type_id')
             ->select('accommodation_types.id', 'accommodation_types.name', 'accommodation_pricing.base_price')
             ->when($this->search, fn($q) =>
-            $q->where('accommodation_types.name', 'like', "%{$this->search}%")
+            $q->whereRaw('LOWER(accommodation_types.name) LIKE ?', ['%' . strtolower($this->search) . '%'])
             )
             ->orderBy('accommodation_types.' . $this->sortBy, $this->sortDirection)
             ->get()

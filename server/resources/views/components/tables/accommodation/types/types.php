@@ -19,6 +19,7 @@ new class extends Component
     {
         $this->search = $value;
         $this->resetPage();
+        unset($this->types);
     }
 
     #[On('item-deleted')]
@@ -42,10 +43,11 @@ new class extends Component
     {
         return DB::table('accommodation_types')
             ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('name', 'like', "%{$this->search}%")
-                        ->orWhere('description', 'like', "%{$this->search}%");
-                });
+                $term = '%' . strtolower($this->search) . '%';
+                $query->where(fn($q) =>
+                $q->whereRaw('LOWER(name) LIKE ?', [$term])
+                    ->orWhereRaw('LOWER(description) LIKE ?', [$term])
+                );
             })
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(10);
