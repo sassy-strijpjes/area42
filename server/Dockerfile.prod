@@ -55,11 +55,10 @@ COPY . .
 
 COPY --from=frontend /app/public/build ./public/build
 
-RUN php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
-    && php artisan migrate:fresh
-    && php artisan db:seed
+RUN php artisan migrate:fresh --force \
+    && php artisan db:seed \
+    && php artisan optimize:clear \
+    && php artisan optimize
 
 RUN chown -R www-data:www-data storage bootstrap/cache
 
