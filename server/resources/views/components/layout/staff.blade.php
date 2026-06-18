@@ -56,7 +56,7 @@
                     </flux:dropdown>
                 @endcan
 
-                @if(can('view_accommodation-types') || can('view_accommodation-units'))
+                @if(can('view_accommodation-types') || can('view_accommodation-units') || can('view_accommodation-pricing-rules'))
                     <flux:dropdown>
                         <flux:navbar.item
                                 icon="home-modern"
@@ -72,6 +72,9 @@
                             @endcan
                             @can('view_accommodation-units')
                                 <flux:navmenu.item href="{{ route('staff.accommodation.units') }}">Units</flux:navmenu.item>
+                            @endcan
+                            @can('view_accommodation-pricing-rules')
+                                <flux:navmenu.item href="{{ route('staff.accommodation.pricing') }}">Pricing rules</flux:navmenu.item>
                             @endcan
                         </flux:navmenu>
                     </flux:dropdown>
