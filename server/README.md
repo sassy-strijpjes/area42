@@ -14,6 +14,7 @@ Group project "Area42-1" from semester 2.
     - [Running artisan commands](#running-artisan-commands)
     - [Viewing logs](#viewing-logs)
     - [Database access](#database-access)
+    - [Testing](#testing)
 
 ## Local installation
 
@@ -113,3 +114,11 @@ database client using these credentials:
 | Database | area42_software |
 | Username | postgres        |
 | Password | secret          |
+
+### Testing
+
+You can run tests with:
+
+```bash
+./vendor/bin/pest
+```

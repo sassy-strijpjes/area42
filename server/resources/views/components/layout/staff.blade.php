@@ -50,11 +50,32 @@
                         </flux:navbar.item>
                         <flux:navmenu>
                             <flux:navmenu.item href="{{ route('staff.restaurant.bookings') }}">Restaurant</flux:navmenu.item>
-                            <flux:navmenu.item href="#">Accomodations</flux:navmenu.item>
+                            <flux:navmenu.item href="#">Accommodation</flux:navmenu.item>
                             <flux:navmenu.item href="#">Bikes</flux:navmenu.item>
                         </flux:navmenu>
                     </flux:dropdown>
                 @endcan
+
+                @if(can('view_accommodation-types') || can('view_accommodation-units'))
+                    <flux:dropdown>
+                        <flux:navbar.item
+                                icon="home-modern"
+                                icon:trailing="chevron-down"
+                                :current="request()->routeIs('staff.accommodation*')"
+                                wire:navigate
+                        >
+                            Accommodation
+                        </flux:navbar.item>
+                        <flux:navmenu>
+                            @can('view_accommodation-types')
+                                <flux:navmenu.item href="{{ route('staff.accommodation.types') }}">Types</flux:navmenu.item>
+                            @endcan
+                            @can('view_accommodation-units')
+                                <flux:navmenu.item href="{{ route('staff.accommodation.units') }}">Units</flux:navmenu.item>
+                            @endcan
+                        </flux:navmenu>
+                    </flux:dropdown>
+                @endif
             </flux:navbar>
 
             <flux:spacer />
