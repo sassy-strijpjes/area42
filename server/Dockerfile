@@ -77,8 +77,7 @@ RUN composer dump-autoload --optimize --no-scripts
 
 # now run package discovery explicitly so failures are easier to inspect
 RUN php artisan package:discover --ansi
-RUN php artisan migrate:fresh --force
-RUN php artisan db:seed --force
+RUN php artisan migrate --force
 RUN php artisan optimize:clear
 RUN php artisan optimize
 
