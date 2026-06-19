@@ -2,12 +2,6 @@ name: Deploy
 
 on:
   workflow_dispatch:
-    inputs:
-      reset_db:
-        description: "FULL RESET DB (migrate:fresh + seed)"
-        required: false
-        default: "false"
-
   push:
     tags:
       - "*.*.*"
@@ -31,38 +25,13 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build and push image
+      - name: Build, tag, and push docker image to Amazon ECR
         working-directory: server
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: area42-webapp
-          IMAGE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || github.sha }}
+          IMAGE_TAG:
+            ${{ github.ref_type == 'tag' && github.ref_name || github.sha }}
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-
-      - name: Run migrations (normal OR full reset)
-        working-directory: server
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: area42-webapp
-          IMAGE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || github.sha }}
-        run: |
-          docker run --rm \
-            -e DB_CONNECTION=${{ secrets.DB_CONNECTION }} \
-            -e DB_HOST=${{ secrets.DB_HOST }} \
-            -e DB_PORT=${{ secrets.DB_PORT }} \
-            -e DB_DATABASE=${{ secrets.DB_DATABASE }} \
-            -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
-            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-            $REGISTRY/$REPOSITORY:$IMAGE_TAG \
-            bash -c "
-              if [ '${{ github.event.inputs.reset_db }}' = 'true' ]; then
-                echo '⚠️ FULL DB RESET: migrate:fresh + seed' &&
-                php artisan migrate:fresh --force &&
-                php artisan db:seed --force
-              else
-                echo '✔ Normal migration' &&
-                php artisan migrate --force
-              fi
-            "
