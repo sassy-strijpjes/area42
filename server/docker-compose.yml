@@ -13,7 +13,7 @@ services:
 
     app:
         build:
-            dockerfile: Dockerfile
+            dockerfile: Dockerfile.dev
             context: .
         env_file:
             - .env
