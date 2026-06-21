@@ -57,17 +57,6 @@ if (!function_exists('role')) {
     }
 }
 
-if (!function_exists('roleLevel')) {
-    function roleLevel(): ?int
-    {
-        if (isAdminPanel()) {
-            return 0;
-        }
-
-        return role()?->level;
-    }
-}
-
 if (!function_exists('can')) {
     function can($permission): bool
     {
