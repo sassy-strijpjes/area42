@@ -208,9 +208,8 @@
             @endif
         </flux:card>
     @endif
-</div>
 
-<script>
+    <script>
 function predictionChart() {
     return {
         predictionChartInstance: null,
@@ -390,17 +389,13 @@ function predictionChart() {
 }
 </script>
 
-    {{-- Loading overlay — only shown when loading is active --}}
-    <div
-        x-data
-        x-show="$wire.loading"
-        x-transition.opacity
-        x-cloak
-        style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);">
-        <div style="background: #1f2937; color: #f9fafb; border: 1px solid #374151; border-radius: 12px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); padding: 2rem; text-align: center; max-width: 400px; margin: 0 1rem;">
-            <div style="width: 48px; height: 48px; border: 3px solid #374151; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem;"></div>
-            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.25rem; color: #f9fafb;">Generating predictions...</h3>
-            <p style="font-size: 0.875rem; color: #9ca3af;">Running the AI model. This should only take a moment.</p>
+    <div wire:loading wire:target="predict" wire:key="predict-overlay" style="display: none;">
+        <div style="display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);">
+            <div style="background: #1f2937; color: #f9fafb; border: 1px solid #374151; border-radius: 12px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); padding: 2rem; text-align: center; max-width: 400px; margin: 0 1rem;">
+                <div style="width: 48px; height: 48px; border: 3px solid #374151; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem;"></div>
+                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.25rem; color: #f9fafb;">Generating predictions...</h3>
+                <p style="font-size: 0.875rem; color: #9ca3af;">Running the AI model. This should only take a moment.</p>
+            </div>
         </div>
     </div>
 

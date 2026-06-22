@@ -160,17 +160,13 @@
         </div>
     </div>
 
-    {{-- Loading overlay — only shown when training is active --}}
-    <div
-        x-data
-        x-show="$wire.training"
-        x-transition.opacity
-        x-cloak
-        style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);">
-        <div style="background: #1f2937; color: #f9fafb; border: 1px solid #374151; border-radius: 12px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); padding: 2rem; text-align: center; max-width: 400px; margin: 0 1rem;">
-            <div style="width: 48px; height: 48px; border: 3px solid #374151; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem;"></div>
-            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.25rem; color: #f9fafb;">Training {{ $granularity }} model...</h3>
-            <p style="font-size: 0.875rem; color: #9ca3af;">This may take up to a minute. Please don't close this page.</p>
+    <div wire:loading wire:target="train" wire:key="train-overlay" style="display: none;">
+        <div style="display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);">
+            <div style="background: #1f2937; color: #f9fafb; border: 1px solid #374151; border-radius: 12px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); padding: 2rem; text-align: center; max-width: 400px; margin: 0 1rem;">
+                <div style="width: 48px; height: 48px; border: 3px solid #374151; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem;"></div>
+                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.25rem; color: #f9fafb;">Training {{ $granularity }} model...</h3>
+                <p style="font-size: 0.875rem; color: #9ca3af;">This may take up to a minute. Please don't close this page.</p>
+            </div>
         </div>
     </div>
 
