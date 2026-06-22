@@ -46,8 +46,6 @@ class RolePermissionSeeder extends Seeder
         'add_accommodation-pricing-rules',
         'edit_accommodation-pricing-rules',
         'delete_accommodation-pricing-rules',
-        'view_ai_predictions',
-        'train_ai_model',
     ];
 
     public array $rolePermissions = [
@@ -125,25 +123,5 @@ class RolePermissionSeeder extends Seeder
                 'role_id' => $sr['role_id'],
             ], $this->staffRoles)
         );
-
-        // Assign AI permissions: IT (role 1) gets both, Manager (role 2) gets view only
-        $itRoleId = 1;   // IT
-        $mgrRoleId = 2;  // Manager
-
-        $viewAiId = DB::table('permissions')->where('name', 'view_ai_predictions')->value('id');
-        $trainAiId = DB::table('permissions')->where('name', 'train_ai_model')->value('id');
-
-        $aiAssignments = [];
-        if ($viewAiId) {
-            $aiAssignments[] = ['role_id' => $itRoleId, 'permission_id' => $viewAiId];
-            $aiAssignments[] = ['role_id' => $mgrRoleId, 'permission_id' => $viewAiId];
-        }
-        if ($trainAiId) {
-            $aiAssignments[] = ['role_id' => $itRoleId, 'permission_id' => $trainAiId];
-        }
-
-        foreach ($aiAssignments as $assignment) {
-            DB::table('role_permissions')->insertOrIgnore($assignment);
-        }
     }
 }

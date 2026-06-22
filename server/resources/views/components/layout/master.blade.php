@@ -6,6 +6,7 @@
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Area42</title>
         @vite('resources/css/app.css')
+        @vite('resources/js/app.js')
         @fluxAppearance
     </head>
     <body class="min-h-screen bg-white dark:bg-stone-800 antialiased">

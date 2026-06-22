@@ -20,6 +20,9 @@ Route::name('admin.')->prefix('admin')->middleware(['auth'])->group(function () 
     Route::view('roles/create', 'admin.roles.create')->name('roles.create');
     Route::view('roles/{role}/edit', 'admin.roles.edit')->name('roles.edit');
     Route::view('logs', 'admin.logs')->name('logs');
+    Route::view('ai', 'admin.ai.overview')->name('ai.overview');
+    Route::view('ai/train', 'admin.ai.train')->name('ai.train');
+    Route::view('ai/predict', 'admin.ai.predict')->name('ai.predict');
     Route::get('login', [AuthController::class, 'type'])->name('login');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });

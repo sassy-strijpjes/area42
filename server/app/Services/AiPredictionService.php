@@ -83,7 +83,7 @@ class AiPredictionService
     {
         foreach ($data as $item) {
             if (isset($item['week_start'])) return true;
-            if (isset($item['date'])) return false;
+            if (isset($item['date']) || isset($item['stay_date'])) return false;
         }
         return false;
     }
@@ -92,7 +92,7 @@ class AiPredictionService
     {
         $rows = [];
         foreach ($data as $i => $item) {
-            $dateValue = $item['week_start'] ?? $item['date'] ?? null;
+            $dateValue = $item['week_start'] ?? $item['date'] ?? $item['stay_date'] ?? null;
             $occValue = $item['occupancy_rate'] ?? null;
             if ($dateValue === null || $occValue === null) {
                 throw new \InvalidArgumentException("Item $i missing date or occupancy_rate");
@@ -118,6 +118,9 @@ class AiPredictionService
 
     protected function runPython(string $workingDir, array $arguments): void
     {
+        // Override PHP max execution time for long-running Python processes
+        set_time_limit(300);
+
         $python = env('AI_PYTHON_BINARY', 'python');
         $process = new Process(array_merge([$python], $arguments), $workingDir);
         $process->setTimeout(300);
@@ -162,5 +165,70 @@ class AiPredictionService
         }
         fclose($f);
         return array_values($predictions);
+    }
+
+    /**
+     * Get model info (metadata) for a granularity.
+     */
+    public function modelInfo(string $granularity = 'daily'): array
+    {
+        $aiRoot = $this->aiRoot();
+        $metaPath = $aiRoot . '/Models/occupancy_' . $granularity . '_metadata.json';
+        $modelPath = $aiRoot . '/Models/occupancy_' . $granularity . '.pkl';
+
+        if (!file_exists($metaPath)) {
+            return ['exists' => false, 'granularity' => $granularity];
+        }
+
+        $meta = json_decode(file_get_contents($metaPath), true);
+        return [
+            'exists' => true,
+            'granularity' => $granularity,
+            'model_name' => $meta['model_name'] ?? null,
+            'order' => $meta['order'] ?? null,
+            'exog_columns' => $meta['exog_columns'] ?? null,
+            'baseline_strategy' => $meta['baseline_model']['strategy'] ?? null,
+            'model_file' => $modelPath,
+            'model_size' => file_exists($modelPath) ? filesize($modelPath) : 0,
+        ];
+    }
+
+    /**
+     * Get training metrics for all granularities.
+     */
+    public function metrics(): array
+    {
+        $aiRoot = $this->aiRoot();
+        $result = [];
+        foreach (['daily', 'weekly'] as $g) {
+            $path = $aiRoot . '/Reports/metrics_' . $g . '.json';
+            if (file_exists($path)) {
+                $result[$g] = json_decode(file_get_contents($path), true);
+            } else {
+                $result[$g] = null;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Get test summary metrics (accuracy/speed).
+     */
+    public function testSummary(): ?array
+    {
+        $path = $this->aiRoot() . '/Reports/test_summary.json';
+        if (!file_exists($path)) return null;
+        return json_decode(file_get_contents($path), true);
+    }
+
+    /**
+     * Get historical test predictions for a given granularity.
+     * Returns the predictions CSV as an array suitable for charting.
+     */
+    public function historicalPredictions(string $granularity = 'daily'): array
+    {
+        $aiRoot = $this->aiRoot();
+        $path = $aiRoot . '/Reports/predictions_' . $granularity . '.csv';
+        return $this->loadPredictionsCsv($path, $granularity === 'weekly');
     }
 }

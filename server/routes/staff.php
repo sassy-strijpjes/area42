@@ -4,8 +4,6 @@ use App\Http\Controllers\AiPredictionController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
-require __DIR__ . '/admin.php';
-
 Route::post('ai/train', [AiPredictionController::class, 'train']);
 Route::post('ai/predict', [AiPredictionController::class, 'predict']);
 
