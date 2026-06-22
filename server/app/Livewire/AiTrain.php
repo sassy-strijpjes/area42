@@ -13,6 +13,7 @@ class AiTrain extends Component
 
     public string $granularity = 'daily';
     public $csvFile = null;
+    public ?string $csvRaw = null;
     public ?array $parsedPreview = null;
     public int $previewCount = 0;
     public int $previewTotal = 0;
@@ -23,6 +24,10 @@ class AiTrain extends Component
 
     public function updatedCsvFile(): void
     {
+        // Livewire uploads are temporary — persist content now
+        if ($this->csvFile && $this->csvFile->getRealPath()) {
+            $this->csvRaw = file_get_contents($this->csvFile->getRealPath());
+        }
         $this->parsePreview();
     }
 
@@ -33,20 +38,11 @@ class AiTrain extends Component
         $this->previewTotal = 0;
         $this->errorMessage = null;
 
-        if (!$this->csvFile) {
+        if (empty(trim($this->csvRaw ?? ''))) {
             return;
         }
 
-        $this->validate([
-            'csvFile' => ['required', 'file', 'mimes:csv,txt', 'max:10240'],
-        ]);
-
-        $content = file_get_contents($this->csvFile->getRealPath());
-        if (empty(trim($content))) {
-            return;
-        }
-
-        $lines = explode("\n", trim($content));
+        $lines = explode("\n", trim($this->csvRaw));
         if (count($lines) < 2) {
             $this->errorMessage = 'CSV must have a header row and at least one data row.';
             return;
@@ -80,13 +76,12 @@ class AiTrain extends Component
         $this->errorMessage = null;
         $this->result = null;
 
-        if (!$this->csvFile) {
+        if (empty(trim($this->csvRaw ?? ''))) {
             $this->errorMessage = 'Please upload a CSV file first.';
             return;
         }
 
-        $content = file_get_contents($this->csvFile->getRealPath());
-        $lines = explode("\n", trim($content));
+        $lines = explode("\n", trim($this->csvRaw));
         $header = str_getcsv(array_shift($lines));
         $dateCol = $this->granularity === 'weekly' ? 'week_start' : 'stay_date';
 
