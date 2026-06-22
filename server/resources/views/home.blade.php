@@ -35,7 +35,7 @@
                     </flux:card>
                 </a>
 
-                <a href="#"
+                <a href="{{ route('book.accommodation') }}"
                    class="group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-xl">
                     <flux:card class="h-full flex flex-col gap-5 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors duration-200">
                         <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400">
