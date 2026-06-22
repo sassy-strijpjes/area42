@@ -124,8 +124,15 @@ class AiTrain extends Component
     public function render()
     {
         $service = app(AiPredictionService::class);
+        $testSummary = $service->testSummary();
+
+        $trustDaily = $testSummary ? (int) round(100 - ($testSummary['accuracy']['daily']['smape_pct'] ?? 100)) : null;
+        $trustWeekly = $testSummary ? (int) round(100 - ($testSummary['accuracy']['weekly']['smape_pct'] ?? 100)) : null;
+
         return view('livewire.ai-train', [
             'existingMetrics' => $service->metrics(),
+            'trustDaily' => $trustDaily,
+            'trustWeekly' => $trustWeekly,
         ]);
     }
 }

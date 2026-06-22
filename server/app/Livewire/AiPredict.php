@@ -92,10 +92,16 @@ class AiPredict extends Component
         $service = app(AiPredictionService::class);
         $modelDaily = $service->modelInfo('daily');
         $modelWeekly = $service->modelInfo('weekly');
+        $testSummary = $service->testSummary();
+
+        $trustDaily = $testSummary ? (int) round(100 - ($testSummary['accuracy']['daily']['smape_pct'] ?? 100)) : null;
+        $trustWeekly = $testSummary ? (int) round(100 - ($testSummary['accuracy']['weekly']['smape_pct'] ?? 100)) : null;
 
         return view('livewire.ai-predict', [
             'modelDaily' => $modelDaily,
             'modelWeekly' => $modelWeekly,
+            'trustDaily' => $trustDaily,
+            'trustWeekly' => $trustWeekly,
         ]);
     }
 }

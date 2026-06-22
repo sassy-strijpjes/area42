@@ -47,10 +47,13 @@
                 </div>
 
                 {{-- Model Info --}}
-                @php $currentModel = $granularity === 'daily' ? $modelDaily : $modelWeekly; @endphp
+                @php
+                    $currentModel = $granularity === 'daily' ? $modelDaily : $modelWeekly;
+                    $currentTrust = $granularity === 'daily' ? $trustDaily : $trustWeekly;
+                @endphp
                 @if($currentModel['exists'])
                     <flux:badge variant="solid" color="green" class="mb-4">
-                        Model trained ({{ implode(',', $currentModel['order']) }})
+                        Model ready — {{ $currentTrust }}% trusted
                     </flux:badge>
                 @else
                     <flux:badge variant="solid" color="red" class="mb-4">

@@ -141,16 +141,22 @@
             {{-- Existing Model Metrics --}}
             @if(!empty($existingMetrics))
                 <flux:card class="p-6">
-                    <h3 class="text-lg font-semibold mb-4">Existing Model Metrics</h3>
+                    <h3 class="text-lg font-semibold mb-4">Existing Models</h3>
                     @foreach($existingMetrics as $g => $m)
                         @if($m)
+                            @php $trust = $g === 'daily' ? $trustDaily : $trustWeekly; @endphp
                             <div class="mb-3 last:mb-0">
-                                <div class="text-sm font-medium capitalize mb-1">{{ $g }}</div>
-                                <div class="flex gap-4 text-xs text-zinc-500">
-                                    <span>Train: {{ $m['train_rows'] ?? '--' }} rows</span>
-                                    <span>Test: {{ $m['test_rows'] ?? '--' }} rows</span>
-                                    <span>MAE: {{ $m['sarimax_mae'] ?? '--' }}</span>
-                                    <span>Order: {{ isset($m['best_order']) ? implode(',', $m['best_order']) : '--' }}</span>
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm font-medium capitalize">{{ $g }}</div>
+                                    @if($trust !== null)
+                                        <flux:badge variant="solid" size="sm" color="{{ $trust >= 90 ? 'green' : ($trust >= 75 ? 'yellow' : 'red') }}">
+                                            {{ $trust }}% trusted
+                                        </flux:badge>
+                                    @endif
+                                </div>
+                                <div class="flex gap-4 text-xs text-zinc-500 mt-1">
+                                    <span>{{ $m['train_rows'] ?? '--' }} trained on</span>
+                                    <span>{{ $m['test_rows'] ?? '--' }} verified against</span>
                                 </div>
                             </div>
                         @endif
