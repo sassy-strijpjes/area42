@@ -235,9 +235,17 @@ function predictionChart() {
             const upper = data.upper || [];
             const crowdLevels = data.crowd_levels || [];
 
-            const pointColors = crowdLevels.map(l =>
-                l === 'laag' ? '#22c55e' : l === 'normaal' ? '#eab308' : '#ef4444'
-            );
+            const crowdColor = (level) => level === 'laag' ? '#22c55e' : level === 'normaal' ? '#eab308' : '#ef4444';
+
+            const pointColors = crowdLevels.map(crowdColor);
+
+            // Build per-segment gradients for smooth color transitions
+            const segmentColors = [];
+            for (let i = 1; i < values.length; i++) {
+                const prevColor = crowdColor(crowdLevels[i - 1]);
+                const nextColor = crowdColor(crowdLevels[i]);
+                segmentColors.push([prevColor, nextColor]);
+            }
 
             this.predictionChartInstance = new Chart(ctx, {
                 type: 'line',
@@ -260,11 +268,27 @@ function predictionChart() {
                             borderColor: '#3b82f6',
                             backgroundColor: '#3b82f6',
                             pointBackgroundColor: pointColors,
-                            pointRadius: 3,
-                            pointHoverRadius: 6,
+                            pointBorderColor: pointColors,
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 7,
                             borderWidth: 2,
                             tension: 0.3,
                             fill: false,
+                            segment: {
+                                borderColor: (ctx) => {
+                                    const segIdx = ctx.p1DataIndex - 1;
+                                    if (segIdx < 0 || segIdx >= segmentColors.length) return segmentColors[0][0];
+                                    const [from, to] = segmentColors[segIdx];
+                                    if (from === to) return from;
+                                    const { x: x0, y: y0 } = ctx.p0;
+                                    const { x: x1, y: y1 } = ctx.p1;
+                                    const gradient = ctx.chart.ctx.createLinearGradient(x0, y0, x1, y1);
+                                    gradient.addColorStop(0, from);
+                                    gradient.addColorStop(1, to);
+                                    return gradient;
+                                },
+                            },
                         },
                         {
                             label: 'Lower Bound (80%)',
@@ -316,9 +340,13 @@ function predictionChart() {
             const lower = data.map(d => d.lower_bound);
             const upper = data.map(d => d.upper_bound);
             const crowdLevels = data.map(d => d.crowd_level);
-            const pointColors = crowdLevels.map(l =>
-                l === 'laag' ? '#22c55e' : l === 'normaal' ? '#eab308' : '#ef4444'
-            );
+            const crowdColor = (level) => level === 'laag' ? '#22c55e' : level === 'normaal' ? '#eab308' : '#ef4444';
+            const pointColors = crowdLevels.map(crowdColor);
+
+            const segmentColors = [];
+            for (let i = 1; i < values.length; i++) {
+                segmentColors.push([crowdColor(crowdLevels[i - 1]), crowdColor(crowdLevels[i])]);
+            }
 
             this.historyChartInstance = new Chart(ctx, {
                 type: 'line',
@@ -341,11 +369,27 @@ function predictionChart() {
                             borderColor: '#8b5cf6',
                             backgroundColor: '#8b5cf6',
                             pointBackgroundColor: pointColors,
-                            pointRadius: 2,
-                            pointHoverRadius: 5,
+                            pointBorderColor: pointColors,
+                            pointBorderWidth: 2,
+                            pointRadius: 3,
+                            pointHoverRadius: 6,
                             borderWidth: 2,
                             tension: 0.3,
                             fill: false,
+                            segment: {
+                                borderColor: (ctx) => {
+                                    const segIdx = ctx.p1DataIndex - 1;
+                                    if (segIdx < 0 || segIdx >= segmentColors.length) return segmentColors[0][0];
+                                    const [from, to] = segmentColors[segIdx];
+                                    if (from === to) return from;
+                                    const { x: x0, y: y0 } = ctx.p0;
+                                    const { x: x1, y: y1 } = ctx.p1;
+                                    const gradient = ctx.chart.ctx.createLinearGradient(x0, y0, x1, y1);
+                                    gradient.addColorStop(0, from);
+                                    gradient.addColorStop(1, to);
+                                    return gradient;
+                                },
+                            },
                         },
                         {
                             label: 'Lower Bound',
