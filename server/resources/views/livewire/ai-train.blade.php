@@ -150,7 +150,7 @@
                                     <div class="text-sm font-medium capitalize">{{ $g }}</div>
                                     @if($trust !== null)
                                         <flux:badge variant="solid" size="sm" color="{{ $trust >= 90 ? 'green' : ($trust >= 75 ? 'yellow' : 'red') }}">
-                                            {{ $trust }}% trusted
+                                            {{ $trust }}% accuracy
                                         </flux:badge>
                                     @endif
                                 </div>

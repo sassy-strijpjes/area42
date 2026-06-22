@@ -53,7 +53,7 @@
                 @endphp
                 @if($currentModel['exists'])
                     <flux:badge variant="solid" color="green" class="mb-4">
-                        Model ready — {{ $currentTrust }}% trusted
+                        Model ready — {{ $currentTrust }}% accuracy
                     </flux:badge>
                 @else
                     <flux:badge variant="solid" color="red" class="mb-4">
