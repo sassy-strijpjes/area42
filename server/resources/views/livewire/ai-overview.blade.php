@@ -3,9 +3,9 @@
         Refresh
     </flux:button>
 
-    {{-- Trust Scores --}}
+    {{-- Historical model scores --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        {{-- Daily Trust --}}
+        {{-- Daily historical score --}}
         <flux:card class="p-6 text-center">
             @if($modelDaily['exists'])
                 @php $dailyScore = $this->trustScore('daily'); @endphp
@@ -20,7 +20,7 @@
                     </svg>
                     <span class="absolute text-3xl font-bold">{{ $dailyScore }}%</span>
                 </div>
-                <h3 class="text-lg font-semibold mb-1">Daily Predictions</h3>
+                <h3 class="text-lg font-semibold mb-1">Daily historical score</h3>
                 <p class="text-sm text-zinc-500">
                     {{ $dailyScore >= 90 ? 'Very reliable' : ($dailyScore >= 75 ? 'Moderately reliable' : 'Needs retraining') }}
                 </p>
@@ -32,7 +32,7 @@
             @endif
         </flux:card>
 
-        {{-- Weekly Trust --}}
+        {{-- Weekly historical score --}}
         <flux:card class="p-6 text-center">
             @if($modelWeekly['exists'])
                 @php $weeklyScore = $this->trustScore('weekly'); @endphp
@@ -47,7 +47,7 @@
                     </svg>
                     <span class="absolute text-3xl font-bold">{{ $weeklyScore }}%</span>
                 </div>
-                <h3 class="text-lg font-semibold mb-1">Weekly Predictions</h3>
+                <h3 class="text-lg font-semibold mb-1">Weekly historical score</h3>
                 <p class="text-sm text-zinc-500">
                     {{ $weeklyScore >= 90 ? 'Very reliable' : ($weeklyScore >= 75 ? 'Moderately reliable' : 'Needs retraining') }}
                 </p>
@@ -62,11 +62,10 @@
 
     {{-- What this means --}}
     <flux:card class="p-6 mb-8">
-        <h3 class="text-lg font-semibold mb-2">What is the trust score?</h3>
+        <h3 class="text-lg font-semibold mb-2">What does this score mean?</h3>
         <p class="text-sm text-zinc-500 dark:text-zinc-400">
-            The trust score is <strong>100% minus the average prediction error</strong> (SMAPE).
-            A score of <strong>90% or higher</strong> means predictions are very trustworthy — typically off by less than 10%.
-            A score <strong>below 75%</strong> indicates the model may need retraining with newer data.
+            This is a <strong>historical score</strong>: 100% minus the historical average percentage error (SMAPE).
+            It is not classification accuracy or a guarantee for an individual prediction. The forecast interval and the underlying SMAPE remain visible in the training view.
         </p>
     </flux:card>
 

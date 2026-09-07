@@ -20,8 +20,8 @@ class AiPredictionService
             mkdir($tmpDir, 0755, true);
         }
 
-        $isWeekly = $this->isWeeklyData($data);
-        $granularity = $isWeekly ? 'weekly' : 'daily';
+        $granularity = $this->detectGranularity($data);
+        $isWeekly = $granularity === 'weekly';
         $dateCol = $isWeekly ? 'week_start' : 'stay_date';
 
         $csvPath = $tmpDir . DIRECTORY_SEPARATOR . 'ai_training_' . uniqid() . '.csv';
@@ -51,6 +51,7 @@ class AiPredictionService
     public function predict(string $startDate, int $days, string $granularity = 'daily'): array
     {
         $aiRoot = $this->aiRoot();
+        $this->ensureModelExists($aiRoot, $granularity);
         $outputFile = 'future_predictions_' . $granularity . '.csv';
 
         $this->runPython($aiRoot, [
@@ -79,13 +80,47 @@ class AiPredictionService
         return $root;
     }
 
-    protected function isWeeklyData(array $data): bool
+    /**
+     * Determine one unambiguous input contract. A model can only be trained
+     * against one time granularity at a time; silently converting a mixed
+     * payload would create an invalid chronological series.
+     */
+    protected function detectGranularity(array $data): string
     {
+        $granularities = [];
         foreach ($data as $item) {
-            if (isset($item['week_start'])) return true;
-            if (isset($item['date']) || isset($item['stay_date'])) return false;
+            $hasWeekStart = isset($item['week_start']) && $item['week_start'] !== '';
+            $hasDay = (isset($item['date']) && $item['date'] !== '')
+                || (isset($item['stay_date']) && $item['stay_date'] !== '');
+
+            if ($hasWeekStart === $hasDay) {
+                throw new \InvalidArgumentException(
+                    'Each training row must contain exactly one of week_start or date/stay_date.'
+                );
+            }
+
+            $granularities[] = $hasWeekStart ? 'weekly' : 'daily';
         }
-        return false;
+
+        if (count(array_unique($granularities)) !== 1) {
+            throw new \InvalidArgumentException(
+                'Training data cannot mix weekly (week_start) and daily (date or stay_date) rows.'
+            );
+        }
+
+        return $granularities[0] ?? throw new \InvalidArgumentException('Training data is empty.');
+    }
+
+    protected function ensureModelExists(string $aiRoot, string $granularity): void
+    {
+        $modelPath = $aiRoot . '/Models/occupancy_' . $granularity . '.pkl';
+        $metadataPath = $aiRoot . '/Models/occupancy_' . $granularity . '_metadata.json';
+
+        if (!file_exists($modelPath) || !file_exists($metadataPath)) {
+            throw new \RuntimeException(
+                "No trained $granularity model is available. Train a $granularity model before requesting a forecast."
+            );
+        }
     }
 
     protected function writeCsv(array $data, string $path, string $dateCol): void
@@ -212,13 +247,29 @@ class AiPredictionService
     }
 
     /**
-     * Get test summary metrics (accuracy/speed).
+     * Return display metrics derived from the current model reports.
+     *
+     * Forecasting is regression, so "accuracy" is not a native model metric.
+     * The UI score is explicitly derived from historical SMAPE: 100 - SMAPE.
      */
     public function testSummary(): ?array
     {
-        $path = $this->aiRoot() . '/Reports/test_summary.json';
-        if (!file_exists($path)) return null;
-        return json_decode(file_get_contents($path), true);
+        $accuracy = [];
+
+        foreach ($this->metrics() as $granularity => $metrics) {
+            $smape = $metrics['sarimax_smape'] ?? $metrics['sarimax']['smape'] ?? null;
+            if (!is_numeric($smape)) {
+                continue;
+            }
+
+            $smape = (float) $smape;
+            $accuracy[$granularity] = [
+                'smape_pct' => $smape,
+                'historical_score_pct' => round(max(0, min(100, 100 - $smape)), 2),
+            ];
+        }
+
+        return $accuracy === [] ? null : ['accuracy' => $accuracy];
     }
 
     /**

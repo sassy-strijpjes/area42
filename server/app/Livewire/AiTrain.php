@@ -126,8 +126,10 @@ class AiTrain extends Component
         $service = app(AiPredictionService::class);
         $testSummary = $service->testSummary();
 
-        $trustDaily = $testSummary ? (int) round(100 - ($testSummary['accuracy']['daily']['smape_pct'] ?? 100)) : null;
-        $trustWeekly = $testSummary ? (int) round(100 - ($testSummary['accuracy']['weekly']['smape_pct'] ?? 100)) : null;
+        $dailyScore = $testSummary['accuracy']['daily']['historical_score_pct'] ?? null;
+        $weeklyScore = $testSummary['accuracy']['weekly']['historical_score_pct'] ?? null;
+        $trustDaily = is_numeric($dailyScore) ? (int) round((float) $dailyScore) : null;
+        $trustWeekly = is_numeric($weeklyScore) ? (int) round((float) $weeklyScore) : null;
 
         return view('livewire.ai-train', [
             'existingMetrics' => $service->metrics(),

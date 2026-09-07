@@ -23,15 +23,11 @@ class AiOverview extends Component
         $this->testSummary = $service->testSummary();
     }
 
-    /**
-     * Trust = 100 - SMAPE%. SMAPE measures how far off predictions are on average.
-     * 0% error = 100% trust, 100% error = 0% trust.
-     */
+    /** Historical score = 100 - historical SMAPE; this is not classification accuracy. */
     public function trustScore(string $granularity): ?int
     {
-        $smape = $this->testSummary['accuracy'][$granularity]['smape_pct'] ?? null;
-        if ($smape === null) return null;
-        return (int) round(100 - $smape);
+        $score = $this->testSummary['accuracy'][$granularity]['historical_score_pct'] ?? null;
+        return is_numeric($score) ? (int) round((float) $score) : null;
     }
 
     public function render()

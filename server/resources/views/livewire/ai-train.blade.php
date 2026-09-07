@@ -150,13 +150,16 @@
                                     <div class="text-sm font-medium capitalize">{{ $g }}</div>
                                     @if($trust !== null)
                                         <flux:badge variant="solid" size="sm" color="{{ $trust >= 90 ? 'green' : ($trust >= 75 ? 'yellow' : 'red') }}">
-                                            {{ $trust }}% accuracy
+                                            {{ $trust }}% historical score
                                         </flux:badge>
                                     @endif
                                 </div>
                                 <div class="flex gap-4 text-xs text-zinc-500 mt-1">
                                     <span>{{ $m['train_rows'] ?? '--' }} trained on</span>
                                     <span>{{ $m['test_rows'] ?? '--' }} verified against</span>
+                                    @if(isset($m['sarimax_smape']))
+                                        <span>{{ number_format((float) $m['sarimax_smape'], 2) }}% SMAPE</span>
+                                    @endif
                                 </div>
                             </div>
                         @endif

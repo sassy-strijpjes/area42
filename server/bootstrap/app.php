@@ -18,10 +18,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth' => Auth::class,
             'permission' => PermissionMiddleware::class,
         ]);
-        $middleware->validateCsrfTokens(except: [
-            'ai/train',
-            'ai/predict',
-        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

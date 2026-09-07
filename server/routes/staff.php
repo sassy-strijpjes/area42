@@ -4,8 +4,13 @@ use App\Http\Controllers\AiPredictionController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('ai/train', [AiPredictionController::class, 'train']);
-Route::post('ai/predict', [AiPredictionController::class, 'predict']);
+Route::middleware(['auth', 'permission:train_ai_model'])
+    ->post('ai/train', [AiPredictionController::class, 'train'])
+    ->name('ai.train');
+
+Route::middleware(['auth', 'permission:view_ai_predictions'])
+    ->post('ai/predict', [AiPredictionController::class, 'predict'])
+    ->name('ai.predict');
 
 Route::name('staff.')->middleware(['auth'])->group(function () {
     Route::get('forgot-password', [AuthController::class, 'forgotPassword'])->name('forgot-password');
