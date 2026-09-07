@@ -57,6 +57,15 @@
                 >
                     Logs
                 </flux:sidebar.item>
+
+                <flux:sidebar.item
+                    icon="chart-bar"
+                    :href="route('admin.ai.overview')"
+                    :current="request()->routeIs('admin.ai*')"
+                    wire:navigate
+                >
+                    AI Predictions
+                </flux:sidebar.item>
             </flux:sidebar.nav>
 
             <flux:sidebar.spacer />

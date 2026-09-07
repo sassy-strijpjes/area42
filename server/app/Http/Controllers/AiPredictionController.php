@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Services\AiPredictionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class AiPredictionController extends Controller
 {
@@ -22,7 +24,15 @@ class AiPredictionController extends Controller
             'data.*.date' => ['nullable', 'date_format:Y-m-d', 'required_without:data.*.week_start'],
         ]);
 
-        $result = $service->train($validated['data']);
+        try {
+            $result = $service->train($validated['data']);
+        } catch (\InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        } catch (ProcessFailedException $exception) {
+            Log::error('AI training process failed', ['exit_code' => $exception->getProcess()->getExitCode()]);
+
+            return response()->json(['message' => 'AI training could not be completed. Check the input data and server log.'], 500);
+        }
 
         return response()->json($result);
     }
@@ -46,7 +56,15 @@ class AiPredictionController extends Controller
         $days = (int) $validated['days'];
         $granularity = $validated['granularity'] ?? 'daily';
 
-        $predictions = $service->predict($date, $days, $granularity);
+        try {
+            $predictions = $service->predict($date, $days, $granularity);
+        } catch (\RuntimeException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 409);
+        } catch (ProcessFailedException $exception) {
+            Log::error('AI prediction process failed', ['exit_code' => $exception->getProcess()->getExitCode()]);
+
+            return response()->json(['message' => 'AI prediction could not be completed. Check the server log.'], 500);
+        }
 
         return response()->json([
             'predictions' => $predictions,

@@ -190,6 +190,7 @@ def train_granularity(name: str, input_path: str) -> dict:
     hi = np.clip(test_bl + ci.iloc[:, 1].to_numpy(), 0, 100)
     bl_m = metrics(test[TARGET], test_bl)
     sar_m = metrics(test[TARGET], preds)
+    interval_coverage = float(np.mean((test[TARGET].to_numpy() >= lo) & (test[TARGET].to_numpy() <= hi)))
 
     full_bl = build_baseline(data)
     full_baseline = np.clip(baseline_predict(data, full_bl), 0, 100)
@@ -220,9 +221,20 @@ def train_granularity(name: str, input_path: str) -> dict:
     pred_path.parent.mkdir(parents=True, exist_ok=True)
     out.to_csv(pred_path, index=False)
 
-    report = {"granularity": name, "train_rows": len(train), "test_rows": len(test),
-              "baseline_mae": bl_m["mae"], "sarimax_mae": sar_m["mae"],
-              "best_order": list(best_order)}
+    report = {
+        "granularity": name,
+        "train_rows": len(train),
+        "test_rows": len(test),
+        "baseline": bl_m,
+        "sarimax": sar_m,
+        # Flat fields keep the Laravel UI and existing report consumers simple.
+        "baseline_mae": bl_m["mae"],
+        "sarimax_mae": sar_m["mae"],
+        "sarimax_rmse": sar_m["rmse"],
+        "sarimax_smape": sar_m["smape"],
+        "interval_coverage_80": round(interval_coverage, 4),
+        "best_order": list(best_order),
+    }
     report_path = PROJECT_ROOT / "Reports" / f"metrics_{name}.json"
     with open(report_path, "w") as f:
         json.dump(report, f, indent=2)

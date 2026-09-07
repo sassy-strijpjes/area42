@@ -54,6 +54,23 @@ class Auth
             }
         }
 
+        if ($request->routeIs('ai.*')) {
+            $id = session('staff_id');
+            $staff = $id
+                ? DB::table('staff')->where('id', $id)->first()
+                : null;
+
+            if (! $staff) {
+                session()->forget('staff_id');
+
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => 'Unauthenticated.'], 401);
+                }
+
+                return redirect()->route('staff.login');
+            }
+        }
+
         return $next($request);
     }
 }
